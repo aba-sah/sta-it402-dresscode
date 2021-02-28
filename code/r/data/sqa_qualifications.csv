@@ -1,0 +1,11 @@
+﻿AwardId,AwardTitle,Level,DataStartYear,DataEndYear
+Higher,Higher,,1986,
+AdvancedHigher,Advanced Higher,,2001,
+OrdinaryGrade,Ordinary Grade,,1986,
+NewHigher,New Higher,,2000,2000
+StandardGrade,Standard Grade,,,
+CSYS,Certiificate of Sixth Year Studies,,,
+HigherNational,Higher National,,,
+HigherNationalCertificate,Higher National Certificate,,,
+HigherNationalDiploma,Higher National Diploma,,,
+HigherNationalUnit,Higher National Unit,,,
