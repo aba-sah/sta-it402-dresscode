@@ -1,13 +1,17 @@
 ﻿AwardId,AwardTitle,SCQFLevel,DataStartYear,DataEndYear
-Higher,Higher,,1986,
+Higher,Higher,6,1986,
 AdvancedHigher,Advanced Higher,7,2001,
 OrdinaryGrade,Ordinary Grade,,1986,
-NewHigher,New Higher,,2000,2000
+NewHigher,New Higher,6,2000;2015,2002;2015
 StandardGrade,Standard Grade,,1986,2013
 CSYS,Certiificate of Sixth Year Studies,,,
 HigherNational,Higher National,,,
-HNCS,Higher National Certificate,,,
-HNDS,Higher National Diploma,,,
+HNCS,Higher National Certificate,7,,
+HNDS,Higher National Diploma,8,,
 HigherNationalUnit,Higher National Unit,,,
-National5,National 5,,2014,
-HNPDA,Professional Development Award,,,
+HNPDA,Professional Development Award,06-Dec,,
+National5,National 5,5,2014,
+National4,National 4,4,,
+National3,National 3,3,,
+National2,National 2,2,,
+National1,National 1,1,,
