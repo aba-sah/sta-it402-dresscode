@@ -1,4 +1,4 @@
-﻿AwardId,AwardTitle,SCQFLevel,DataStartYear,DataEndYear
+﻿QualificationId,QualificationTitle,SCQFLevel,DataStartYear,DataEndYear
 Higher,Higher,6,1986,
 AdvancedHigher,Advanced Higher,7,2001,
 OrdinaryGrade,Ordinary Grade,5,1986,1994
