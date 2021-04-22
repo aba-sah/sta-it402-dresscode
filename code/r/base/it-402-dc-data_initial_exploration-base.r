@@ -6,6 +6,18 @@ library(ggtext)
 library(DBI)
 
 
+#sessionInfo() 
+#
+#if ("package:scales" %in% search())
+#    detach("package:scales", unload = TRUE)
+#
+#sessionInfo()
+
+
+
+
+
+
 
 # themes commented out only because not currently needed or swapping between values
 
@@ -240,7 +252,7 @@ writeToDataStore <-
             currentRowCount <- 0
         else
             currentRowCount <- dbGetQuery(dbConnection, 
-                                          paste("SELECT COUNT(*) FROM", dbTable, "LIMIT 6")) %>%
+                                          paste("SELECT COUNT(*) FROM", dbTable)) %>%
                                     as.integer
         
         
