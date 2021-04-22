@@ -6,18 +6,6 @@ library(ggtext)
 library(DBI)
 
 
-#sessionInfo() 
-#
-#if ("package:scales" %in% search())
-#    detach("package:scales", unload = TRUE)
-#
-#sessionInfo()
-
-
-
-
-
-
 
 # themes commented out only because not currently needed or swapping between values
 
@@ -101,7 +89,7 @@ loadAndParseFile <-
             
             qualificationYear <- suppressWarnings(parse_number(basename(pathTofile)))
             if (is.na(qualificationYear) || 
-                !(as.integer(qualification_year) == qualification_year) || !between(qualificationYear, base_year, latestQualificationYear))
+                !(as.integer(qualificationYear) == qualificationYear) || !between(qualificationYear, base_year, latestQualificationYear))
                 stop(paste("You must specify qualification year as 'yyyy', between", base_year, "and", latestQualificationYear))
             else
                 message(paste0("Qualification year '", qualificationYear, "' derived from file name."))
@@ -251,7 +239,8 @@ writeToDataStore <-
         if (!table_exists | overwriteDataStore)
             currentRowCount <- 0
         else
-            currentRowCount <- dbGetQuery(dbConnection, "SELECT COUNT(*) FROM sqa_data LIMIT 6") %>%
+            currentRowCount <- dbGetQuery(dbConnection, 
+                                          paste("SELECT COUNT(*) FROM", dbTable, "LIMIT 6")) %>%
                                     as.integer
         
         
@@ -263,7 +252,7 @@ writeToDataStore <-
         # todo - dump duplicates - using dbWriteTable means no primary key set
         
         
-        invisible(as.integer(dbGetQuery(dbConnection, "SELECT COUNT(*) FROM sqa_data")) - currentRowCount)
+        invisible(as.integer(dbGetQuery(dbConnection, paste("SELECT COUNT(*) FROM", dbTable))) - currentRowCount)
     }
 
 
@@ -290,7 +279,7 @@ removeDuplicatesFromDataStore <-
         tmp_table <- paste0(dbTable, "_tmp")
         if (as.integer(dbGetQuery(dbConnection, 
                                   paste0("SELECT COUNT(*) FROM sqlite_master WHERE name = '", tmp_table, "' and type = 'table'"))) > 0) 
-            dbRemoveTable(dbConnection, "sqa_data_tmp")
+            dbRemoveTable(dbConnection, tmp_table)
 
         dbExecute(dbConnection, paste("CREATE TABLE ", tmp_table, " AS SELECT * FROM", dbTable, "WHERE 0"))
         dbExecute(dbConnection, paste("INSERT INTO", tmp_table,
