@@ -1,4 +1,4 @@
-LocalAuthority,year,level,cohort,roll,base_year_census,index_factor
+LocalAuthority,year,stage,cohort,roll,base_year_census,index_factor
 Aberdeen City,1995,S1,1995,2111,2160,0.9773148148148149
 Aberdeen City,1995,S2,1994,2210,2120,1.0424528301886793
 Aberdeen City,1995,S3,1993,2203,2206,0.9986400725294651
