@@ -1,11 +1,11 @@
 source("base/it-402-dc-common_vars.r")
-source("base/database-common.r")
+source("base/common.r")
 
 
 #library(tidyverse) - called in common_vars
+#library(DBI) - called in common.r
 library(ggtext)
 
-library(DBI)
 
 
 #sessionInfo() 
@@ -28,13 +28,15 @@ dressCodeTheme <-
         #theme_void() + 
         theme(panel.grid.major.y = element_line(), #panel.grid.minor.y = element_blank(),
                 panel.grid.major.x = element_blank(), #panel.grid.minor.x = element_blank(), 
-                axis.title = element_text(size = 16), 
+                axis.title = element_text(face = "bold", size = 16),
                 axis.text.x = element_text(size = 12), # angle = 0, vjust = 0.3),
                 axis.text.y = element_markdown(size = 12), #element_text(size = 14),
-                plot.title = element_text(size = 20),
-                legend.title = element_text(size = 14), legend.text = element_text(size = 12), 
-                strip.text = element_text(size = 18)
+                plot.title = element_text(lineheight = 0.8, size = 22, face = "bold", margin = margin(t = 10, b = 10)),
+                legend.title = element_text(size = 14), legend.text = element_text(size = 14),
+                strip.text = element_text(size = 18),
+                text = element_text(family = "Helvetica")
             ) 
+
 
 # evaluation will fail if focus_subject not set in advance
 if (!exists("focus_subject") || is_null(focus_subject) || (str_trim(focus_subject) == "")) 
@@ -135,7 +137,7 @@ wrangleData <-
         
         if((awardData %>%
                 select(-matches(redundant_column_flags)) %>% # "-percentage")) %>%
-                select(matches(c("male-", "female-", "NA-", "NotKnown-"))) %>%
+                select(matches(gender_options)) %>%
 
                 summarise(data_as_counts = (ncol(.) == 0))
         ) == TRUE)
@@ -442,7 +444,7 @@ getSubjectChanges <-
 # currently leaving DB connection detail in here but actually running where used
 
 # dbDisconnect(dbConn)
-# unlink(paste0(path_to_file_store, "/sqa-data-db.sqlite"))
+## unlink(paste0(path_to_file_store, "/sqa-data-db.sqlite"))
 
 
 
