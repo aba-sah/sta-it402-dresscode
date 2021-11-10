@@ -10,17 +10,30 @@ output:
 
 ---
 
-<style>
-  .wide_image{
-      overflow-x:scroll;
-      white-space: nowrap;
+```{css, echo = FALSE}
+
+  .wide_image {
+    overflow-x:scroll;
+    white-space: nowrap;
   }
 
-  .wide_image img{
-     max-width: none;
+  .wide_image img {
+    max-width: none;
   }
 
-</style>
+  .large_image {
+    overflow:scroll;
+    white-space: nowrap;
+  }
+
+  .show_hide_element_box {
+    #color: #fff;
+    /* padding: 20px; */
+    display: none;
+    /* margin-top: 20px; */
+  }
+
+```
 
 
 ```{r global-options, include = FALSE, cache = FALSE}
@@ -70,16 +83,107 @@ dbConn <- dbConnect(RSQLite::SQLite(), paste0(path_to_file_store, "/", "sqa-data
 source("base/sta_it_402_dc_data_etl.r", local = knitr::knit_global())
 source("base/sta_it_402_dc_data_parsing.r", local = knitr::knit_global())
 
+r_dataframe_to_js(sqa_qualifications_ordering$qualification, var_name = "qualifications")
+r_dataframe_to_js(sqa_qualifications_ordering$qualification_label, var_name = "qualification_labels")
+
 ```
 
+
+```{js, echo = FALSE}
+/*  adapted from https://khaalipaper.com/javascript/show-hide-div-based-on-dropdown-selection-in-jquery.php#parentHorizontalTab1 */
+
+
+$("#qualification_selector_cf_english_maths").ready(function() {
+  createSelector("cf_english_maths", "sqa_qualification_plot_cf_english_maths_");
+});
+
+$("#qualification_selector_cf_sciences").ready(function() {
+  createSelector("cf_sciences", "sqa_qualification_plot_cf_sciences_");
+});
+
+
+$("#plot_options_cf_english_maths").ready(function() {
+  $("#plot_options_cf_english_maths").change(function() {
+
+    $(this).find("option:selected").each(function() {
+      var optionValue = $(this).attr("value");
+
+      if (optionValue) {
+
+        var qualification = optionValue.substring(optionValue.lastIndexOf("_") + 1)
+        optionValue = optionValue.substr(0, optionValue.lastIndexOf("_") + 1) +
+                          (qualifications.indexOf(qualification) + 1)
+        console.log(qualification)
+        console.log(optionValue)
+
+        $(".show_hide_element_box").not("." + optionValue).hide();
+        $("." + optionValue).show();
+
+      } else {
+        $(".show_hide_element_box").hide();
+      }
+
+    });
+  }).change();
+});
+
+$("#plot_options_cf_sciences").ready(function() {
+  $("#plot_options_cf_sciences").change(function() {
+
+    $(this).find("option:selected").each(function() {
+      var optionValue = $(this).attr("value");
+
+      if (optionValue) {
+
+        var qualification = optionValue.substring(optionValue.lastIndexOf("_") + 1)
+        optionValue = optionValue.substr(0, optionValue.lastIndexOf("_") + 1) +
+                          (qualifications.indexOf(qualification) + 1)
+        console.log(qualification)
+        console.log(optionValue)
+
+        $(".show_hide_element_box").not("." + optionValue).hide();
+        $("." + optionValue).show();
+
+      } else {
+        $(".show_hide_element_box").hide();
+      }
+
+    });
+  }).change();
+});
+
+
+function createSelector(selector_id, id_prefix) {
+  var qualificationSelector = document.createElement("select");
+  qualificationSelector.setAttribute("id", ("plot_options_" + selector_id));
+  document.getElementById("qualification_selector_" + selector_id).appendChild(qualificationSelector);
+
+  var qualification = document.createElement("option");
+  qualification.appendChild(document.createTextNode("Select Qualification"));
+  qualificationSelector.appendChild(qualification);
+
+  qualifications.forEach(createOptionElements);
+
+
+  function createOptionElements(item, index) {
+
+    var qualification = document.createElement("option");
+    qualification.setAttribute("value", id_prefix + item);
+    qualification.appendChild(document.createTextNode(qualification_labels[index]));
+
+    qualificationSelector.appendChild(qualification);
+  }
+}
+
+```
 
 
 Sidebar {.sidebar}
 =======================================================================
 
-## Blah
+## TBC
 
-blah, blah
+
 
 
 Overview
@@ -100,7 +204,7 @@ Gender Distribution {data-navmenu="Exploring the Data&nbsp;&ndash;&nbsp;Pupils"}
 Row {data-height=100}
 -----------------------------------------------------------------------
 
-> Change over time &ndash; __gender distribution__ across all subjects and qualifications, compared to gender distribution for computing subjects only.
+> Change over time &ndash; __gender distribution__ across all subjects and qualifications, compared to gender distribution for computing subjects only. (Mouse over the edge of each line for percentages.)
 
 Column
 -----------------------------------------------------------------------
@@ -168,48 +272,82 @@ Row {.tabset .tabset-fade}
 
 ### Computing vs. English &amp; Maths
 
+<div class="large_image">
+
 #### Subject Takeup Overall
 
-<div class="wide_image">
+  ```{r, computing_uptake_over_time_cf_english_maths_summary}
+  ```
 
-```{r, computing_uptake_over_time_cf_english_maths_summary}
-```
-</div>
+#### Gender Distribution Overall
 
+  ```{r, computing_uptake_over_time_cf_english_maths}
+  ```
 
-#### Gender Distribution
+#### Gender Distribution by Qualification
 
-<div class="wide_image">
+  ```{=html}
 
-```{r, computing_uptake_over_time_cf_english_maths}
-```
+  ```{r, computing_uptake_over_time_cf_english_maths_by_qualification}
+  ```
+
+  <div id = "qualification_selector_cf_english_maths">
+  </div>
+  <p>&nbsp;<br /></p>
+
+  ```
+
+  <div class="sqa_qualification_plot_cf_english_maths_1 show_hide_element_box"> `r plots_cf_english_maths[[1]] ` </div>
+  <div class="sqa_qualification_plot_cf_english_maths_2 show_hide_element_box"> `r plots_cf_english_maths[[2]] ` </div>
+  <div class="sqa_qualification_plot_cf_english_maths_3 show_hide_element_box"> `r plots_cf_english_maths[[3]] ` </div>
+  <div class="sqa_qualification_plot_cf_english_maths_4 show_hide_element_box"> `r plots_cf_english_maths[[4]] ` </div>
+  <div class="sqa_qualification_plot_cf_english_maths_5 show_hide_element_box"> `r plots_cf_english_maths[[5]] ` </div>
+  <div class="sqa_qualification_plot_cf_english_maths_6 show_hide_element_box"> `r plots_cf_english_maths[[6]] ` </div>
+  <div class="sqa_qualification_plot_cf_english_maths_7 show_hide_element_box"> `r plots_cf_english_maths[[7]] ` </div>
+  <div class="sqa_qualification_plot_cf_english_maths_8 show_hide_element_box"> `r plots_cf_english_maths[[8]] ` </div>
+
 </div>
 
 
 ### Computing vs. Science Subjects
 
-#### Subject Takeup Overall 
 
-<div class="wide_image">
+<div class="large_image">
+
+#### Subject Takeup Overall 
 
 ```{r, computing_uptake_over_time_cf_sciences_summary}
 ```
-</div>
 
 
 #### Gender Distribution
 
-<div class="wide_image">
-
 ```{r, computing_uptake_over_time_cf_sciences}
 ```
+
+#### Gender Distribution by Qualification
+
+  ```{=html}
+
+  ```{r, computing_uptake_over_time_cf_sciences_by_qualification}
+  ```
+
+  <div id = "qualification_selector_cf_sciences">
+  </div>
+  <p>&nbsp;<br /></p>
+
+  ```
+
+  <div class="sqa_qualification_plot_cf_sciences_1 show_hide_element_box"> `r plots_cf_sciences[[1]] ` </div>
+  <div class="sqa_qualification_plot_cf_sciences_2 show_hide_element_box"> `r plots_cf_sciences[[2]] ` </div>
+  <div class="sqa_qualification_plot_cf_sciences_3 show_hide_element_box"> `r plots_cf_sciences[[3]] ` </div>
+  <div class="sqa_qualification_plot_cf_sciences_4 show_hide_element_box"> `r plots_cf_sciences[[4]] ` </div>
+  <div class="sqa_qualification_plot_cf_sciences_5 show_hide_element_box"> `r plots_cf_sciences[[5]] ` </div>
+  <div class="sqa_qualification_plot_cf_sciences_6 show_hide_element_box"> `r plots_cf_sciences[[6]] ` </div>
+  <div class="sqa_qualification_plot_cf_sciences_7 show_hide_element_box"> `r plots_cf_sciences[[7]] ` </div>
+  <div class="sqa_qualification_plot_cf_sciences_8 show_hide_element_box"> `r plots_cf_sciences[[8]] ` </div>
+
 </div>
-
-```
-{=html}
-<p>&nbsp;<br /></p>
-
-```
 
 
 Variation across Locations {data-navmenu="Exploring the Data&nbsp;&ndash;&nbsp;Pupils"}
