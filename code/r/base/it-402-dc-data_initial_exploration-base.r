@@ -437,6 +437,40 @@ getSubjectChanges <-
         return(subject_changes)
     }
 
+createSubjectGroups <-
+
+    function(award_data, focus_subject, subject_filter = "", overwrite_subject_group = NULL) {
+
+        if (is.null(subject_filter))
+            subject_filter <- ""
+
+        award_data <- award_data %>%
+
+            distinct(Subject) %>%
+            filter(str_detect(Subject, regex(paste0(focus_subject, collapse = "|"), ignore_case = TRUE)) &
+                   ((str_trim(subject_filter) == "") | !str_detect(Subject, regex(paste0(subject_filter, collapse = "|"), ignore_case = TRUE)))
+                  ) %>%
+
+
+            mutate(SubjectGroup = str_match(Subject, regex(paste0(focus_subject, collapse = "|"), ignore_case = TRUE)))
+
+        if (!is.null(overwrite_subject_group)) {
+            search_options <- paste0("^(", paste0(enframe(overwrite_subject_group)$name, collapse = "|"), ")$")
+
+            award_data <- award_data %>%
+                filter(str_detect(Subject, regex(search_options, ignore_case = TRUE), negate = TRUE)) %>%
+
+                bind_rows(award_data %>%
+                            filter(Subject == str_match(Subject, regex(search_options, ignore_case = TRUE))) %>%
+                            mutate_at(vars(everything()), as.character) %>%
+                            mutate(SubjectGroup = str_to_title(overwrite_subject_group[str_detect(enframe(overwrite_subject_group)$name, regex(Subject, ignore_case = TRUE))]))
+                )
+        }
+
+
+        invisible(award_data%>%
+                    mutate_at(vars(everything()), as.character))
+    }
 
 
 

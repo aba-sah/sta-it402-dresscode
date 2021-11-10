@@ -42,7 +42,17 @@ create_shared_legend <-
         
         return(pseudo_plot$grobs[[legend]])
     }
-                            
+
+
+#
+# adapted from https://www.aliciaschep.com/blog/js-rmarkdown
+# and that adapted from http://livefreeordichotomize.com/2017/01/24/custom-javascript-visualizations-in-rmarkdown
+#
+r_dataframe_to_js <- function(x, var_name = "data", ...) {
+  
+  json_data <- jsonlite::toJSON(x, ...)
+  htmltools::tags$script(paste0("var ",var_name," = ", json_data, ";"))
+}
 
 
 # updated with newer function calls

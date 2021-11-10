@@ -255,7 +255,7 @@ plot_tmp <- add_trace(plot_tmp,
                         x = ~ year,
                         y = ~ get(gender_column_labels[1]),
                         text = ~ paste0(gender_column_labels[1], " - ", 
-                                        round(get(gender_column_labels[1]) / AllEntries, 2) * 100, "% (", 
+                                        round(get(gender_column_labels[1]) / AllEntries, 3) * 100, "% (", 
                                             formatNumber(get(gender_column_labels[1])), ") in ", year),
                         name = gender_column_labels[1], 
 
@@ -273,7 +273,7 @@ plot_tmp <- add_trace(plot_tmp,
                         x = ~ year,
                         y = ~ get(gender_column_labels[2]),
                         text = ~ paste0(gender_column_labels[2], " - ", 
-                                        round(get(gender_column_labels[2]) / AllEntries, 2) * 100, "% (", 
+                                        round(get(gender_column_labels[2]) / AllEntries, 3) * 100, "% (", 
                                             formatNumber(get(gender_column_labels[2])), ") in ", year),
                         name = gender_column_labels[2], 
 
@@ -355,7 +355,7 @@ plot_tmp %>%
            xaxis = list(tickfont = list(size = 10), tickangle = -45, title = list(text = "")), #showgrid = FALSE),
            yaxis = list(tickfont = tickFont, showgrid = TRUE, showline = TRUE, 
                         title = list(text = paste("No. of Students -", str_to_title(focus_subject)), font = list(size = 16))), 
-           margin = list(b = 5)
+           margin = list(b = 5, t = -25)
           ) # end layout
                            
                                   
@@ -381,7 +381,7 @@ for (i in seq_along(qualifications)) {
                             x = ~ year,
                             y = ~ get(gender_column_labels[1]),
                             text = ~ paste0(qualification, " - ", gender_column_labels[1], ": ", 
-                                            round(get(gender_column_labels[1]) / AllEntries, 2) * 100, "% (", 
+                                            round(get(gender_column_labels[1]) / AllEntries, 3) * 100, "% (", 
                                             formatNumber(get(gender_column_labels[1])), ") in ", year),
                             visible = (i == 1),
                             #name = ~ qualification, 
@@ -404,7 +404,7 @@ for (i in seq_along(qualifications)) {
                             x = ~ year,
                             y = ~ get(gender_column_labels[2]),
                             text = ~ paste0(qualification, " - ", gender_column_labels[2], ": ", 
-                                            round(get(gender_column_labels[2]) / AllEntries, 2) * 100, "% (", 
+                                            round(get(gender_column_labels[2]) / AllEntries, 3) * 100, "% (", 
                                             formatNumber(get(gender_column_labels[2])), ") in ", year),
                             visible = (i == 1),
                             #name = ~ qualification, 
@@ -560,10 +560,10 @@ plot1 <- filter_focus_subject_summaries %>%
     
                            
 convertToPlotly(plot1, height = 450, width = 2000) %>% 
-    layout(legend = list(itemclick = FALSE, itemdoubleclick = FALSE), 
+    layout(legend = list(title = "", itemclick = FALSE, itemdoubleclick = FALSE), 
            #xaxis = list(tickfont = list(size = 8), title = list(text = "")),
            yaxis = list(tickfont = tickFont, title = list(text = "No. of Students", font = list(size = 16))), 
-           margin = list(l = 5))                       
+           margin = list(l = 5, t = -1))                       
                            
                                
 ## ---- computing_uptake_over_time_cf_english_maths_summary --------
@@ -594,7 +594,158 @@ convertToPlotly(plot1, height = 350, width = 2000) %>%
     layout(legend = list(itemclick = FALSE, itemdoubleclick = FALSE), 
            #xaxis = list(tickfont = list(size = 8), title = list(text = "")),
            yaxis = list(tickfont = tickFont, title = list(text = "No. of Students", font = list(size = 16))), 
-           margin = list(l = 5))
+           margin = list(l = 5, t = -1))
+         
+                           
+                           
+## ---- computing_uptake_over_time_cf_english_maths_by_qualification --------
+
+plots_cf_english_maths <- list()
+qualifications <- sqa_qualifications_ordering$qualification
+
+
+for (i in seq_along(qualifications)) {
+
+
+    plots_cf_english_maths[[i]] <- filter_focus_subjects %>%
+        filter(str_detect(SubjectGroup, regex(paste(focus_subjects[[1]], collapse = "|"), ignore_case = TRUE))) %>%
+        filter(qualification == qualifications[i]) %>% 
+        mutate(SubjectGroup = droplevels(SubjectGroup),
+               SubjectGroup = fct_reorder(SubjectGroup, AllEntries)) %>%
+
+
+        group_by(year) %>%
+        group_map(~ plot_ly(., width = 2000, height = 360) %>%
+
+                    add_trace(
+                            x = ~ SubjectGroup, 
+                            y = ~ get(gender_column_labels[2]), 
+                            color = gender_column_labels[2], 
+                            colors = gender_colour_scheme,
+                            type = "scatter", 
+                            mode = "markers",
+                            text = ~ paste0(SubjectGroup, " at ", qualification, " - ", gender_column_labels[2], ": ", 
+                                          round(get(gender_column_labels[2]) / AllEntries, 3) * 100, "% of entries in ", year),
+                            hoverinfo = "text",
+
+                            showlegend =  FALSE, 
+                            legendgroup = ~ gender_column_labels[2] 
+                            ) %>%
+
+                    add_trace(
+                          x = ~ SubjectGroup, 
+                          y = ~ get(gender_column_labels[1]), 
+                          color = gender_column_labels[1], 
+                          colors = gender_colour_scheme,
+                          type = "scatter", 
+                          mode = "markers",
+                          text = ~ paste0(SubjectGroup, " at ", qualification, " - ", gender_column_labels[1], ": ", 
+                                          round(get(gender_column_labels[1]) / AllEntries, 3) * 100, "% of entries in ", year),
+                          hoverinfo = "text",
+
+                          showlegend = FALSE,
+                          legendgroup = ~ gender_column_labels[1]                   
+                    ) %>%
+
+
+                    add_trace(
+                            x = ~ SubjectGroup, 
+                            y = ~ (get(gender_column_labels[1]) + get(gender_column_labels[2])) / 2, 
+                            text = ~ tooltip, 
+                            color = I("transparent"),
+                            type = "scatter", 
+                            mode = "markers",
+                            #marker = list(opacity = 0, size = 0), # ignores size - need opacity or colour to prevent visibility
+                            text = ~ tooltip,
+                            hoverinfo = "text",
+                            hoverlabel = list(bgcolor="white"),
+
+                            showlegend = FALSE                   
+                    ) %>%
+
+                    add_segments(
+                             x = ~ SubjectGroup, xend = ~ SubjectGroup, 
+                             y = ~ get(gender_column_labels[1]), 
+                             yend = ~ get(gender_column_labels[2]), 
+                             line = list(width = 1),
+                             opacity = 0.65,
+                             color = ~ segment_encoding, 
+                             colors = gender_colour_scheme,
+                             text = ~ tooltip, # shows in json but not actually on screen :S
+                             hoverinfo = "text",
+                        
+                             name = "gender_difference",
+                             showlegend = FALSE
+                         ) %>%
+
+
+                    add_annotations(
+                        text = ~ year,
+                        x = 0.5,
+                        y = 1,
+
+                        yref = "paper",
+                        xref = "paper",
+                        xanchor = "center",
+                        yanchor = "bottom",
+                        showarrow = FALSE,
+                        font = list(size = 12)
+                    ) %>%
+
+                    layout(
+                        yaxis = list(title = list(text = "No. of Students"), type = "log"),
+                        xaxis = list(title = list(text = ""), tickfont = list(size = 10), tickangle = -90,
+                                     autotick = FALSE, type = "category", categoryarray = ~ levels(SubjectGroup), categoryorder = "array"),
+                        legend = list(itemclick = FALSE, itemdoubleclick = FALSE, tracegroupgap = 1, traceorder = "reversed"), 
+                        #margin = list(l = 125, r = 15),
+                        #hovermode = "x unified",
+                        showlegend = TRUE,
+                        
+                        shapes = list(
+                                    type = "rect",
+                                    x0 = 0,
+                                    x1 = 1,
+                                    xref = "paper",
+
+                                    y0 = 0, 
+                                    y1 = 16,
+                                    xanchor = 1,
+                                    yanchor = 1,
+                                    yref = "paper",
+
+                                    ysizemode = "pixel",
+                                    fillcolor = toRGB("gray80"),
+                                    line = list(color = "transparent")
+                        )
+                    ), 
+                  .keep = TRUE) %>%
+            subplot(nrows = 1, margin = 0.0035, shareX = TRUE, shareY = TRUE) %>%
+
+            plotly_build()
+
+
+    female_legend <- FALSE
+    male_legend <- FALSE
+
+    for (j in seq_along(plots_cf_english_maths[[i]]$x$data)) {
+
+        if (plots_cf_english_maths[[i]]$x$data[[j]]$name == gender_column_labels[1]) {
+
+            plots_cf_english_maths[[i]]$x$data[[j]]$showlegend <- TRUE
+            female_legend <- !female_legend
+
+        } else if (plots_cf_english_maths[[i]]$x$data[[j]]$name == gender_column_labels[2]) {
+
+            plots_cf_english_maths[[i]]$x$data[[j]]$showlegend <- TRUE
+            male_legend <- !male_legend
+        }
+
+        if (female_legend & male_legend)
+            break;
+    }
+}
+
+rm(female_legend, male_legend)
 
                            
                            
@@ -640,10 +791,10 @@ plot1 <- filter_focus_subject_summaries %>%
     
                            
 convertToPlotly(plot1, height = 450, width = 2500) %>% 
-    layout(legend = list(itemclick = FALSE, itemdoubleclick = FALSE), 
+    layout(legend = list(title = "", itemclick = FALSE, itemdoubleclick = FALSE), 
            #xaxis = list(tickfont = list(size = 8), title = list(text = "")),
            yaxis = list(tickfont = tickFont, title = list(text = "No. of Students", font = list(size = 16))), 
-           margin = list(l = 5))             
+           margin = list(l = 5, t = -1))             
                            
                                
 ## ---- computing_uptake_over_time_cf_sciences_summary --------
@@ -674,7 +825,165 @@ convertToPlotly(plot1, height = 350, width = 2500) %>%
     layout(legend = list(itemclick = FALSE, itemdoubleclick = FALSE), 
            #xaxis = list(tickfont = list(size = 8), title = list(text = "")),
            yaxis = list(tickfont = tickFont, title = list(text = "No. of Students", font = list(size = 16))), 
-           margin = list(l = 5))
+           margin = list(l = 5, t = -1))
+
+                           
+                           
+## ---- computing_uptake_over_time_cf_sciences_by_qualification --------
+
+
+
+plots_cf_sciences <- list()
+qualifications <- sqa_qualifications_ordering$qualification
+
+
+for (i in seq_along(qualifications)) {
+
+
+    plots_cf_sciences[[i]] <- filter_focus_subjects %>%
+        filter(str_detect(SubjectGroup, regex(paste(focus_subjects[[2]], collapse = "|"), ignore_case = TRUE))) %>%
+        filter(qualification == qualifications[i]) %>%
+        mutate(SubjectGroup = droplevels(SubjectGroup),
+               SubjectGroup = fct_reorder(SubjectGroup, AllEntries)) %>%
+
+
+        group_by(year) %>%
+        group_map(~ plot_ly(., width = 2500, height = 350) %>%
+
+                    add_trace(
+                            x = ~ SubjectGroup,
+                            y = ~ get(gender_column_labels[2]),
+                            color = gender_column_labels[2],
+                            colors = gender_colour_scheme,
+                            type = "scatter",
+                            mode = "markers",
+                            text = ~ paste0(SubjectGroup, " at ", qualification, " - ", gender_column_labels[2], ": ",
+                                          round(get(gender_column_labels[2]) / AllEntries, 3) * 100, "% of entries in ", year),
+                            hoverinfo = "text",
+
+                            showlegend =  FALSE,
+                            legendgroup = ~ gender_column_labels[2]
+                            ) %>%
+
+                    add_trace(
+                          x = ~ SubjectGroup,
+                          y = ~ get(gender_column_labels[1]),
+                          color = gender_column_labels[1],
+                          colors = gender_colour_scheme,
+                          type = "scatter",
+                          mode = "markers",
+                          text = ~ paste0(SubjectGroup, " at ", qualification, " - ", gender_column_labels[1], ": ",
+                                          round(get(gender_column_labels[1]) / AllEntries, 3) * 100, "% of entries in ", year),
+                          hoverinfo = "text",
+
+                          showlegend = FALSE,
+                          legendgroup = ~ gender_column_labels[1]
+                    ) %>%
+
+
+                    add_trace(
+                            x = ~ SubjectGroup,
+                            y = ~ (get(gender_column_labels[1]) + get(gender_column_labels[2])) / 2,
+                            text = ~ tooltip,
+                            color = I("transparent"),
+                            type = "scatter",
+                            mode = "markers",
+                            #marker = list(opacity = 0, size = 0), # ignores size - need opacity or colour to prevent visibility
+                            text = ~ tooltip,
+                            hoverinfo = "text",
+                            hoverlabel = list(bgcolor="white"),
+
+                            showlegend = FALSE
+                    ) %>%
+
+                    add_segments(
+                             x = ~ SubjectGroup, xend = ~ SubjectGroup,
+                             y = ~ get(gender_column_labels[1]),
+                             yend = ~ get(gender_column_labels[2]),
+                             line = list(width = 1),
+                             opacity = 0.65,
+                             color = ~ segment_encoding,
+                             colors = gender_colour_scheme,
+                             text = ~ tooltip, # shows in json but not actually on screen :S
+                             hoverinfo = "text",
+
+                             name = "gender_difference",
+                             showlegend = FALSE
+                         ) %>%
+
+
+                    add_annotations(
+                        text = ~ year,
+                        x = 0.5,
+                        y = 1,
+
+                        yref = "paper",
+                        xref = "paper",
+                        xanchor = "center",
+                        yanchor = "bottom",
+                        showarrow = FALSE,
+                        font = list(size = 12)
+                    ) %>%
+
+                    layout(
+                        yaxis = list(title = list(text = "No. of Students"), type = "log"),
+                        xaxis = list(title = list(text = ""), tickfont = list(size = 10), tickangle = -90,
+                                     autotick = FALSE, type = "category", categoryarray = ~ levels(SubjectGroup), categoryorder = "array"),
+                        legend = list(itemclick = FALSE, itemdoubleclick = FALSE, tracegroupgap = 1, traceorder = "reversed"),
+                        #margin = list(l = 125, r = 15),
+                        #hovermode = "x unified",
+                        showlegend = TRUE,
+
+                        shapes = list(
+                                    type = "rect",
+                                    x0 = 0,
+                                    x1 = 1,
+                                    xref = "paper",
+
+                                    y0 = 0,
+                                    y1 = 16,
+                                    xanchor = 1,
+                                    yanchor = 1,
+                                    yref = "paper",
+
+                                    ysizemode = "pixel",
+                                    fillcolor = toRGB("gray80"),
+                                    line = list(color = "transparent")
+                        )
+                    ),
+                  .keep = TRUE) %>%
+            subplot(nrows = 1, margin = 0.0035, shareX = TRUE, shareY = TRUE) %>%
+
+            plotly_build()
+
+
+    female_legend <- FALSE
+    male_legend <- FALSE
+
+    for (j in seq_along(plots_cf_sciences[[i]]$x$data)) {
+
+        if (plots_cf_sciences[[i]]$x$data[[j]]$name == gender_column_labels[1]) {
+
+            plots_cf_sciences[[i]]$x$data[[j]]$showlegend <- TRUE
+            female_legend <- !female_legend
+
+        } else if (plots_cf_sciences[[i]]$x$data[[j]]$name == gender_column_labels[2]) {
+
+            plots_cf_sciences[[i]]$x$data[[j]]$showlegend <- TRUE
+            male_legend <- !male_legend
+        }
+
+        if (female_legend & male_legend)
+            break;
+    }
+}
+
+rm(female_legend, male_legend)
+
+                           
+                           
+## ----  --------
+
 
                            
                            

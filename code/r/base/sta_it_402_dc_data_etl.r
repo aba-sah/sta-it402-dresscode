@@ -44,6 +44,11 @@ sqa_qualifications_data <- bind_rows(dbGetQuery(dbConn, paste("SELECT A.*, B.NoO
 ##
 sqa_qualifications_ordering <- sqa_qualifications_data %>%
     distinct(qualification) %>%
+    mutate_at(vars(qualification), as.character) %>%
+
+    mutate(qualification_label = if_else(qualification == toupper(qualification),
+                                         qualification,
+                                         snakecase::to_title_case(qualification))) %>%
 
     left_join(sqa_qualification_list %>%
 
@@ -54,7 +59,13 @@ sqa_qualifications_ordering <- sqa_qualifications_data %>%
 
     arrange(SCQFLevel, DataStartYear, qualification)
 
-sqa_qualifications_ordering
+sqa_qualifications_ordering < sqa_qualifications_ordering %>%
+    mutate(qualification_label = if_else(qualification == toupper(qualification),
+                                         qualification,
+                                         snakecase::to_title_case(qualification))) %>%
+    relocate(qualification_label, .after = qualification)
+
+#sqa_qualifications_ordering
 
 sqa_qualifications_data <- sqa_qualifications_data %>%
     mutate_at(vars(qualification), ~ fct_relevel(., levels = sqa_qualifications_ordering$qualification))

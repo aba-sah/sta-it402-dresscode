@@ -149,71 +149,63 @@ top_5_subjects <- top_5_subjects %>%
 ##
 
 ### ###
+
 focus_subject <- c("english", "math", "arithmetic")
 subject_filter <- "English for Speakers of Other Languages"
+overwrite_subject_group <- c("arithmetic" = "math")
 
-select_focus_subjects <- sqa_qualifications_data %>%
-
-    distinct(Subject) %>%
-    filter(str_detect(Subject, regex(paste0(focus_subject, collapse = "|"), ignore_case = TRUE)) |
-           str_detect(Subject, regex(paste0(subject_filter, collapse = "|"), ignore_case = TRUE))) %>%
-
-    mutate(SubjectGroup = str_match(Subject, regex(paste0(focus_subject, collapse = "|"), ignore_case = TRUE))) %>%
-    mutate_at(vars(SubjectGroup), ~ if_else(str_detect(Subject, regex("arithmetic", ignore_case = TRUE)), "Math", .)) %>% # manually change Arithmetic to "Math"
-    mutate_at(vars(everything()), as.character)
+select_focus_subjects <- createSubjectGroups(sqa_qualifications_data,
+                                             focus_subject,
+                                             subject_filter,
+                                             overwrite_subject_group)
 
 
 focus_subject <- c("physics", "chemistry", "biology")
 subject_filter <- "technology"
 
 select_focus_subjects <- select_focus_subjects %>%
-    bind_rows(sqa_qualifications_data %>%
-
-                distinct(Subject) %>%
-                filter(str_detect(Subject, regex(paste0(focus_subject, collapse = "|"), ignore_case = TRUE)) &
-                       !str_detect(Subject, regex(paste0(subject_filter, collapse = "|"), ignore_case = TRUE))) %>%
-
-                mutate(SubjectGroup = str_match(Subject, regex(paste0(focus_subject, collapse = "|"), ignore_case = TRUE))) %>%
-                mutate_at(vars(everything()), as.character)
-              )
+                            bind_rows(createSubjectGroups(sqa_qualifications_data,
+                                                          focus_subject,
+                                                          subject_filter,
+                                                          overwrite_subject_group = NULL))
 
 
-focus_subject <- c("engineering")
-subject_filter = c("biotechnology", "technological studies")
+focus_subject <- c("engineering", "biotechnology", "technological studies")
 
 select_focus_subjects <- select_focus_subjects %>%
-    bind_rows(sqa_qualifications_data %>%
-
-                distinct(Subject) %>%
-                filter(str_detect(Subject, regex(paste0(focus_subject, collapse = "|"), ignore_case = TRUE)) |
-                       str_detect(Subject, regex(paste0(subject_filter, collapse = "|"), ignore_case = TRUE))) %>%
-
-                mutate(SubjectGroup = str_match(Subject, regex(paste0(focus_subject, collapse = "|"), ignore_case = TRUE))) %>%
-                mutate_at(vars(everything()), as.character)
-              )
+                            bind_rows(createSubjectGroups(sqa_qualifications_data,
+                                                          focus_subject,
+                                                          overwrite_subject_group = NULL)) %>%
+                            suppressWarnings() # already catering for empty subject_filter search
 
 
 focus_subject <- "computing"
 # ? Information Systems
 
 select_focus_subjects <- select_focus_subjects %>%
-    bind_rows(sqa_qualifications_data %>%
-
-                distinct(Subject) %>%
-                filter(str_detect(Subject, regex(paste0(focus_subject, collapse = "|"), ignore_case = TRUE))) %>%
-
-                mutate(SubjectGroup = str_match(Subject, regex(paste0(focus_subject, collapse = "|"), ignore_case = TRUE))) %>%
-                mutate_at(vars(everything()), as.character)
-              )
+                            bind_rows(createSubjectGroups(sqa_qualifications_data,
+                                                          focus_subject,
+                                                          overwrite_subject_group = NULL)) %>%
+                            suppressWarnings()
 
 
 select_focus_subjects <- select_focus_subjects %>%
     mutate_at(vars(SubjectGroup), ~ if_else(is.na(.), Subject, .)) %>%
-    mutate_at(vars(everything()), as.factor)
+    mutate_at(vars(everything()), as.factor) %>%
+    mutate_at(vars(SubjectGroup), ~ fct_relevel(., str_to_title(focus_subject)))
 
-rm(subject_filter)
+
+levels(select_focus_subjects$Subject)
+levels(select_focus_subjects$SubjectGroup)
+select_focus_subjects
+
+rm(subject_filter, overwrite_subject_group)
 
 
+focus_subjects <- list(c("computing", "english", "math"),
+                       c("computing", "physics", "chemistry", "biology"),
+                       c("computing", "engineering", "biotechnology", "technological studies")
+                      )
 
 ##
 # uptake over time - selected subjects
@@ -341,7 +333,7 @@ filter_focus_subject_summaries <- filter_focus_subjects %>%
     mutate_at(vars(gender_column_labels, AllEntries), ~ na_if(., -Inf)) %>%
 
     group_by(year, SubjectGroup) %>%
-    summarise_at(vars(gender_column_labels, AllEntries), ~ sum(., na.rm = TRUE)) %>%
+    summarise_at(vars(all_of(gender_column_labels), AllEntries), ~ sum(., na.rm = TRUE)) %>%
     mutate_at(vars(gender_column_labels, AllEntries), ~ if_else(is.na(.) | (. == 0), -Inf, .)) %>%
 
     mutate(uptake_difference = abs(coalesce(female, 0) - coalesce(male, 0)) / AllEntries,
@@ -359,9 +351,6 @@ filter_focus_subject_summaries <- filter_focus_subjects %>%
                                         female == male ~ "gray75",
                                         TRUE ~ "")
           )
-
-
-
 
 
 ### ###
