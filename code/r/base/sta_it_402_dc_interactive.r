@@ -1,15 +1,6 @@
 ## ---- computing_offering_across_qualifications --------
 
-options(repr.plot.width = 16, repr.plot.height = 4)
-
-
-time_period_axis_breaks <- 
-    data.frame(year = levels(computing_offering_all_qualifications$year), 
-               tick_label = as.logical(seq_len(length(levels(computing_offering_all_qualifications$year))) %% 2)) %>%
-
-        mutate_at(vars(year), as.character) %>%
-        mutate_at(vars(tick_label), ~ if_else(., year, ""))
-
+options(repr.plot.width = 16, repr.plot.height = 6)
 
 computing_offering_all_qualifications %>%
     mutate(fill_or_not = factor(if_else(computing_offered, as.character(qualification), NA_character_), 
@@ -20,15 +11,94 @@ computing_offering_all_qualifications %>%
                        fill = fill_or_not, 
                       ), 
                        size = 1, shape = 21) +
-        scale_fill_discrete(na.value = "transparent") +
+        khroma::scale_fill_romaO(discrete = TRUE, 
+                                 breaks = computing_offering_all_qualifications$qualification[1], 
+                                 labels = "Computing Offered") + 
+        #scale_fill_discrete(na.value = "transparent") +
+        khroma::scale_colour_romaO(discrete = TRUE, 
+                                 breaks = computing_offering_all_qualifications$qualification[1], 
+                                 labels = "Qualification Offered") + 
         scale_x_discrete(breaks = time_period_axis_breaks$year,
                          labels = time_period_axis_breaks$tick_label) +
         ylab(NULL) + xlab(NULL) + 
-        ggtitle("Years Computing Subject Offered per Qualification") +
+        ggtitle("Computing Subject Timelines") +
         dressCodeTheme +
-        theme(legend.position = "none")    
+        theme(legend.position = "bottom", 
+              legend.title = element_blank(), 
+              legend.margin = margin(0))    
 
 
+                               
+## ---- gender_distribution_static_charts_overall --------
+
+tmp_df <- gender_distribution %>%
+
+    group_by(year, gender) %>%
+    summarise(median = median(NoOfStudents, na.rm = TRUE), 
+              mean = mean(NoOfStudents, na.rm = TRUE),
+              NoOfStudents = sum(NoOfStudents, na.rm = TRUE),
+              AllEntries = sum(AllEntries, na.rm = TRUE),
+              PercentageOfStudents = (NoOfStudents / AllEntries)
+              ) %>%
+    mutate(Subject = "all") 
+
+
+tmp_df %>% 
+
+    ggplot(aes(y = year, x = if_else(gender == "male", PercentageOfStudents, -PercentageOfStudents), 
+               fill = gender, colour = gender)) +
+        geom_segment(aes(xend = 0, yend = year), size = 1.5) + 
+        geom_point(aes(colour = gender), size = 0.75) +
+        #ggtitle(paste0("Gender Distribution - All Subjects")) +
+        ylab("") +  xlab(paste0("\nGender Distribution - All Subjects")) + 
+        scale_x_continuous(labels = function(x) scales::percent(abs(x)), breaks = seq(-1, 1, 0.2)) + 
+        #scale_shape_manual(values = c(6, 2)) + #-0x2640L, -0x2642L)) + # \u2640 and \u2642 
+        scale_colour_manual(values = gender_colour_scheme) + 
+        scale_fill_manual(values = gender_colour_scheme) + 
+        dressCodeTheme +
+        theme(axis.text.x = element_text(size = 9, angle = 0, vjust = 0),
+              axis.text.y = element_text(size = 8), 
+              panel.grid.major.y = element_blank(),
+              panel.grid.major.x = element_line(), 
+              legend.title = element_blank(), 
+              legend.position = "bottom")             
+
+                                   
+## ---- gender_distribution_static_charts_computing --------
+                                   
+tmp_df <- computing_uptake %>%
+
+    group_by(year, gender) %>%
+    summarise(median = median(NoOfStudents, na.rm = TRUE), 
+              mean = mean(NoOfStudents, na.rm = TRUE),
+              NoOfStudents = sum(NoOfStudents, na.rm = TRUE),
+              AllEntries = sum(AllEntries, na.rm = TRUE),
+              PercentageOfStudents = (NoOfStudents / AllEntries)
+              ) %>%
+    mutate(Subject = "all") 
+
+
+tmp_df %>% 
+
+    ggplot(aes(y = year, x = if_else(gender == "male", PercentageOfStudents, -PercentageOfStudents), fill = gender, 
+       text = paste0(gender, " - ", round(PercentageOfStudents, 2) * 100, "% in ", year))) +
+        geom_segment(aes(xend = 0, yend = year, colour = gender), size = 1.5) +
+        geom_point(aes(colour = gender), size = 0.75) +
+        #ggtitle(paste0("Gender Distribution - Computing")) +
+        ylab("") + xlab(paste0("\nGender Distribution - Computing")) +
+        scale_x_continuous(labels = function(x) scales::percent(abs(x)), breaks = seq(-1, 1, 0.2)) + 
+        scale_colour_manual(values = gender_colour_scheme) + 
+        scale_fill_manual(values = gender_colour_scheme) + 
+        dressCodeTheme +
+        theme(axis.text.x = element_text(size = 9, angle = 0, vjust = 0),
+              axis.text.y = element_text(size = 8), 
+              panel.grid.major.y = element_blank(),
+              panel.grid.major.x = element_line(), 
+              legend.title = element_blank(), 
+              legend.position = "bottom")             
+
+
+                                   
 ## ---- gender_distribution_overall --------
 
 plot1 <- gender_distribution %>%
@@ -46,7 +116,7 @@ plot1 <- gender_distribution %>%
                    text = paste0(gender, " - ", round(PercentageOfStudents, 2) * 100, "% in ", year))) +
             geom_segment(aes(xend = 0, yend = year, colour = gender), size = 1) +
             geom_point(aes(colour = gender), size = 0.75) +
-            xlab("Gender Distribution Overall") + 
+            xlab("\nGender Distribution Overall") + 
                  #paste0("\nGender Distribution Overall,\n", 
                  #       str_wrap(paste0(sqa_qualifications_ordering$qualification, collapse = ", "), width = 60, exdent = 4))) +
  
@@ -56,20 +126,22 @@ plot1 <- gender_distribution %>%
             #scale_shape_manual(values = c(6, 2)) + #-0x2640L, -0x2642L)) + # \u2640 and \u2642 
             scale_colour_manual(values = gender_colour_scheme) + 
             scale_fill_manual(values = gender_colour_scheme) + 
-            guides(fill = guide_legend(reverse = TRUE), colour = FALSE) + 
+            guides(fill = guide_legend(reverse = TRUE), colour = "none") + 
             dressCodeTheme +
             theme(panel.grid.major.y = element_blank(),
                   panel.grid.major.x = element_line(), 
                   axis.text.x = element_text(size = 8, angle = 0, vjust = 0),
-                  axis.text.y = element_markdown(size = 9), 
-                  axis.title = element_text(size = 9),
+                  axis.text.y = element_text(size = 9, margin = margin(0, 0, 0, 0, unit = "cm")), 
+                  axis.title = element_text(size = 11),
                   legend.title = element_blank(), legend.position = "bottom")                                               
 
                                
-convertToPlotly(plot1, renameTraces = TRUE, regexpr = genderRegex, height = 450, width = 440, maxMargin = 15) %>% 
-    layout(legend = list(orientation = 'h', yanchor = "bottom")) %>%
-    config(displayModeBar = FALSE)
 
+convertToPlotly(plot1, renameTraces = TRUE, regexpr = genderRegex, height = 450, width = 800, maxMargin = 1) %>% 
+    layout(legend = list(orientation = 'h', yanchor = "bottom"),
+           margin = list(l = 1)) %>%
+    config(displayModeBar = FALSE)
+                                                    
 
 
 ## ---- summary_tables_gender_distribution_overall --------
@@ -107,7 +179,7 @@ plot1 <- computing_uptake %>%
                        text = paste0(gender, " - ", round(PercentageOfStudents, 2) * 100, "% in ", year))) +
                 geom_segment(aes(xend = 0, yend = year, colour = gender), size = 1) +
                 geom_point(aes(colour = gender), size = 0.75) +
-                xlab(paste0("Gender Distribution - ", str_to_title(focus_subject))) + 
+                xlab(paste0("\nGender Distribution - ", str_to_title(focus_subject))) + 
                      #paste0("\nGender Distribution - ", str_to_title(focus_subject), "\n",
                      #       str_wrap(paste0(sqa_qualifications_ordering$qualification, collapse = ", "), width = 60, exdent = 4))) + 
                 ylab(NULL) +
@@ -120,13 +192,14 @@ plot1 <- computing_uptake %>%
                 theme(panel.grid.major.y = element_blank(),
                       panel.grid.major.x = element_line(), 
                       axis.text.x = element_text(size = 8, angle = 0, vjust = 0),
-                      axis.text.y = element_markdown(size = 9), 
-                      axis.title = element_text(size = 9),
+                      axis.text.y = element_text(size = 9), 
+                      axis.title = element_text(size = 11),
                       legend.title = element_blank(), 
                       legend.position = "bottom")             
 
-convertToPlotly(plot1, renameTraces = TRUE, regexpr = genderRegex, height = 450, width = 440, maxMargin = 15) %>% 
-    layout(legend = list(orientation = 'h', yanchor = "bottom")) %>%
+convertToPlotly(plot1, renameTraces = TRUE, regexpr = genderRegex, height = 450, width = 800, maxMargin = 1) %>% 
+    layout(legend = list(orientation = 'h', yanchor = "bottom"),
+           margin = list(l = 1)) %>%
     config(displayModeBar = FALSE)
                                    
 
@@ -141,7 +214,7 @@ computing_uptake %>%
               ) %>%
     mutate_at(vars(PercentageOfStudents), ~ (round(., 3) * 100)) %>%
     select(c(gender, PercentageOfStudents)) %>%
-    rename_with(~ c(" ", "% of all Students")) %>%
+    rename_with(~ c(" ", "% of Computing Entries")) %>%
 
     kable() %>% #caption = "\nGender distribution, computing only") %>%
     kable_paper("striped", full_width = FALSE, position = "left")    
@@ -177,14 +250,15 @@ top_5_subjects  %>%
         suppressMessages()
                           
 
-## ---- top_5_subjects_ --------
+## ---- top_5_subjects_over_time --------
+
 
 qualifications <- levels(top_5_subjects$qualification)
 years <- levels(top_5_subjects$year)
 
 steps <- list()
 
-plot_tmp <- plot_ly(height = 900, width = 1000)
+plot_tmp <- plot_ly(height = 950, width = 1200)
 
 for (i in seq_along(years)) {
 
@@ -204,16 +278,18 @@ for (i in seq_along(years)) {
 
                                 type = "scatter", 
                                 mode = "markers", 
-                                marker = list(opacity = 0.65),
-                                size = ~ popularityOverTime,
-                                #symbol = ~ gender,
-                                #symbols = c("-0x2640L", "-0x2642L"), # \u2640 and \u2642 
+                                marker = ~ list(#symbol = "circle", 
+                                                sizemode = "diameter", opacity = 0.65, 
+                                                line = list(width = 2, color = gender_colour_scheme[gender]),
+                                                size = popularityOverTime * 35), 
+                                sizes = c(10, 15),
+                                #symbols = c("circle", "x"), #c("-0x2640L", "-0x2642L"), # \u2640 and \u2642 
                                 hoverinfo = "text", 
                                 
                                 color = ~ qualification,
                                 showlegend = TRUE
-                               )
-     } # end iteration over qualification
+                               ) 
+    } # end iteration over qualification
 
     
     step <- list(args = list("visible", rep(FALSE, length(qualifications) * length(years))),
@@ -228,24 +304,26 @@ for (i in seq_along(years)) {
 
 plot_tmp %>%
     layout(title = "Top 5 Subjects across Qualifications",
-           xaxis = list(range = c(0, 1.05), tickformat = "%", tickfont = tickFont, title = list(text = "Popularity over Time")),
+           xaxis = list(range = c(0, 1.05), tickformat = ".0%", tickfont = tickFont, title = list(text = "Popularity over Time")),
            yaxis = list(tickfont = list(size = 11), title = list(text = "", font = list(size = 20)), 
                         autotick = FALSE, type = "category", categoryarray = levels(top_5_subjects$Subject.label), categoryorder = "array"), 
-           legend = list(itemsizing = "constant"), # being ignored ...
-           margin = list(l = 5),
+           list(itemsizing = "constant", itemwidth = 30), # being ignored ...
+           margin = list(l = 5, t = 2, b = 2, pad = 5),
            sliders = list(list(active = 0,
                                currentvalue = list(prefix = "Year: "), 
                                font = list(color = "grey"),
-                               steps = steps))
+                               steps = steps, 
+                               pad = list(t = 35)))
     )
 
-                                   
+rm(data_trace)
+                                  
                                    
 ## ---- computing_uptake_over_time --------
                            
 focus_subject <- "computing"
 
-plot_tmp <- plot_ly(height = 320, width = 1000, 
+plot_tmp <- plot_ly(height = 330, width = 1200, 
                     data = filter_focus_subject_summaries %>%
                                 filter(str_detect(SubjectGroup, regex(focus_subject, ignore_case = TRUE))))
 
@@ -303,7 +381,7 @@ plot_tmp <- add_text(plot_tmp,
                      
                      x = ~ year, 
                      y = ~ get(gender_column_labels[1]),
-                     texttemplate = "%{text:%}",
+                     texttemplate = "%{text:.0%}",
                      
                      type = "scatter",
                      mode = "text", 
@@ -311,15 +389,16 @@ plot_tmp <- add_text(plot_tmp,
                      textposition = "top right",
                      textfont = list(color = "gray75", size = 8),
 
-                     name = paste0("gender_uptake_", gender_column_labels[1]),
-                     showlegend = FALSE
+                     name = "gender uptake", #paste0("gender_uptake_", gender_column_labels[1]),
+                     showlegend = TRUE,
+                     legendgroup = gender_column_labels[1]
                     )
    
 plot_tmp <- add_text(plot_tmp, 
                      
                      x = ~ year, 
                      y = ~ get(gender_column_labels[2]),
-                     texttemplate = "%{text:%}",
+                     texttemplate = "%{text:.0%}",
                      
                      type = "scatter",
                      mode = "text", 
@@ -327,15 +406,16 @@ plot_tmp <- add_text(plot_tmp,
                      textposition = "top right",
                      textfont = list(color = "gray75", size = 8),
 
-                     name = paste0("gender_uptake_", gender_column_labels[2]),
-                     showlegend = FALSE
+                     name = "gender uptake", #paste0("gender_uptake_", gender_column_labels[2]),
+                     showlegend = FALSE,
+                     legendgroup = gender_column_labels[1]
                     )
 
 plot_tmp <- add_text(plot_tmp, 
                      
                      x = ~ year, 
                      y = ~ (get(gender_column_labels[1]) + get(gender_column_labels[2])) / 2, 
-                     hovertemplate = ~ paste(tooltip, "<extra></extra>"), #hoverinfo doesn't work in text mode ...
+                     hovertemplate = ~ paste(tooltip2, "<extra></extra>"), #hoverinfo doesn't work in text mode ...
                      hoverlabel = list(bgcolor = "white"),
                      texttemplate = "", #"%{text}%",
                      
@@ -351,11 +431,11 @@ plot_tmp <- add_text(plot_tmp,
 
 
 plot_tmp %>%
-    layout(legend = list(itemclick = FALSE, itemdoubleclick = FALSE), #orientation = 'h', yanchor = "bottom", y = -2.5), 
-           xaxis = list(tickfont = list(size = 10), tickangle = -45, title = list(text = "")), #showgrid = FALSE),
+    layout(#legend = list(itemclick = FALSE, itemdoubleclick = FALSE), #orientation = 'h', yanchor = "bottom", y = -2.5), 
+           xaxis = list(tickfont = list(size = 10), tickangle = -45, title = list(text = ""), standoff = -5), #showgrid = FALSE),
            yaxis = list(tickfont = tickFont, showgrid = TRUE, showline = TRUE, 
                         title = list(text = paste("No. of Students -", str_to_title(focus_subject)), font = list(size = 16))), 
-           margin = list(b = 5, t = -25)
+           margin = list(b = 5) #, t = -25)
           ) # end layout
                            
                                   
@@ -369,7 +449,7 @@ genders <- gender_column_labels #levels(filter_focus_subjects$gender)
 additional_traces <- 4
 
 steps <- list()
-plot_tmp <- plot_ly(height = 380, width = 1000)
+plot_tmp <- plot_ly(height = 380, width = 1200)
 
 for (i in seq_along(qualifications)) {
     
@@ -442,7 +522,7 @@ for (i in seq_along(qualifications)) {
 
                          x = ~ year, 
                          y = ~ get(gender_column_labels[1]),
-                         texttemplate = "%{text:%}",
+                         texttemplate = "%{text:.0%}",
                          visible = (i == 1),                            
 
                          type = "scatter",
@@ -451,15 +531,16 @@ for (i in seq_along(qualifications)) {
                          textposition = "top right",
                          textfont = list(color = "gray75", size = 8),
 
-                         name = paste0("gender_uptake_", gender_column_labels[1]),
-                         showlegend = FALSE
+                         name = "gender uptake", #paste0("gender_uptake_", gender_column_labels[1]),
+                         showlegend = TRUE,
+                         legendgroup = gender_column_labels[1]
                         )
 
     plot_tmp <- add_text(plot_tmp, 
 
                          x = ~ year, 
                          y = ~ get(gender_column_labels[2]),
-                         texttemplate = "%{text:%}",
+                         texttemplate = "%{text:.0%}",
                          visible = (i == 1),                            
 
                          type = "scatter",
@@ -468,15 +549,16 @@ for (i in seq_along(qualifications)) {
                          textposition = "top right",
                          textfont = list(color = "gray75", size = 8),
 
-                         name = paste0("gender_uptake_", gender_column_labels[2]),
-                         showlegend = FALSE
+                         name = "gender uptake", #paste0("gender_uptake_", gender_column_labels[2]),
+                         showlegend = FALSE,
+                         legendgroup = gender_column_labels[1]
                         )
 
     plot_tmp <- add_text(plot_tmp, 
 
                          x = ~ year, 
                          y = ~ (get(gender_column_labels[1]) + get(gender_column_labels[2])) / 2, 
-                         hovertemplate = ~ paste(tooltip, "<extra></extra>"), #hoverinfo doesn't work in text mode ...
+                         hovertemplate = ~ paste(tooltip2, "<extra></extra>"), #hoverinfo doesn't work in text mode ...
                          hoverlabel = list(bgcolor = "white"),
                          texttemplate = "", #"%{text}%",
                          visible = (i == 1),                            
@@ -508,7 +590,7 @@ plot_tmp %>%
            xaxis = list(title = list(text = ""), tickfont = list(size = 10), tickangle = -45, showgrid = FALSE, showline = FALSE),
            yaxis = list(tickfont = tickFont, showgrid = TRUE, showline = TRUE,
                         title = list(text = paste("No. of Students -", str_to_title(focus_subject)), font = list(size = 16)), rangemode = "tozero"), 
-           legend = list(itemclick = FALSE, itemdoubleclick = FALSE),
+           #legend = list(itemclick = FALSE, itemdoubleclick = FALSE),
            margin = list(l = 5),
            sliders = list(list(active = 0, pad = list(t = 35), 
                                currentvalue = list(prefix = "Qualification: "), 

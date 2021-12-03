@@ -54,7 +54,7 @@ checkDataAsPercentageOnly <-
         
         awardData %>%
             select(-matches(c(redundant_column_flags, "all-Entries"))) %>% # "-percentage")) %>%
-            select(matches(c("male-", "female-", "all-"))) %>%
+            select(matches(gender_options)) %>%
             verify(ncol(.) > 0, error_fun = just_warn) %>%
         
             #head(0) - comment in and next line out to list headers remaining

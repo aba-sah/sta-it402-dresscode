@@ -30,7 +30,8 @@ dressCodeTheme <-
                 panel.grid.major.x = element_blank(), #panel.grid.minor.x = element_blank(), 
                 axis.title = element_text(face = "bold", size = 16),
                 axis.text.x = element_text(size = 12), # angle = 0, vjust = 0.3),
-                axis.text.y = element_markdown(size = 12), #element_text(size = 14),
+                #axis.text.y = element_markdown(size = 12), #element_text(size = 14),
+                axis.text.y = element_text(size = 12), 
                 plot.title = element_text(lineheight = 0.8, size = 22, face = "bold", margin = margin(t = 10, b = 10)),
                 legend.title = element_text(size = 14), legend.text = element_text(size = 14),
                 strip.text = element_text(size = 18),
@@ -307,7 +308,7 @@ filterInput <-
 
 
 runPipeline <-
-    function(dataFile, dbConnection = NULL, overwriteDataStore = FALSE) {
+    function(dataFile, dbConnection = NULL, dbTable = NULL, overwriteDataStore = FALSE) {
         
         #print(dataFile)
         
@@ -318,8 +319,10 @@ runPipeline <-
         #print(dim(award_data))
         #print(head(award_data))
 
+        if (is_null(dbTable))
+            dbTable = "sqa_data"
         if (!is_null(dbConnection))
-            writeToDataStore(award_data, dbConnection, overwriteDataStore = overwriteDataStore)
+            writeToDataStore(award_data, dbConnection, dbTable, overwriteDataStore = overwriteDataStore)
     }
 
 

@@ -301,8 +301,8 @@ filter_focus_subjects <- select_focus_subjects_normalised %>%
     ) %>% # end join
 
 
-    mutate_at(vars(gender_column_labels, AllEntries), ~ if_else(is.na(.) | (. == 0), -Inf, .)) %>%
-    #mutate_at(vars(gender_column_labels, AllEntries), as.integer) %>%
+    mutate_at(vars(all_of(gender_column_labels), AllEntries), ~ if_else(is.na(.) | (. == 0), -Inf, .)) %>%
+    #mutate_at(vars(all_of(gender_column_labels), AllEntries), as.integer) %>%
     mutate_at(vars(pseudo_point), ~ is.na(pseudo_point)) %>%
 
     mutate(uptake_difference = abs(coalesce(female, 0) - coalesce(male, 0)) / AllEntries,
@@ -314,6 +314,13 @@ filter_focus_subjects <- select_focus_subjects_normalised %>%
                                  female < male ~ paste(SubjectGroup, "at", qualification, "- Uptake by males exceeds females by", paste0(rounded_uptake_difference, "% in"), year),
                                  female == male ~ paste(SubjectGroup, "at", qualification, "- Gender uptake equal in ", year),
                                  TRUE ~ NA_character_),
+           tooltip2 = case_when((is.na(female) & is.na(male)) | ((female == -Inf) & (male == -Inf)) ~ NA_character_,
+                                   is.na(female) | (female == -Inf) ~ paste(SubjectGroup, "at", qualification, "- No female uptake; male only class in", year),
+                                   is.na(male) | (male == -Inf) ~ paste(SubjectGroup, "at", qualification, "- No male uptake; female only class in", year),
+                                   female > male ~ paste(SubjectGroup, "at", qualification, "- Uptake by females exceeds males by", round(female / male, 1), "times", paste0("(", rounded_uptake_difference, "%)"), "in", year),
+                                   female < male ~ paste(SubjectGroup, "at", qualification, "- Uptake by males exceeds females by", round(male / female, 1), "times", paste0("(", rounded_uptake_difference, "%)"), "in", year),
+                                   female == male ~ paste(SubjectGroup, "at", qualification, "- Gender uptake equal in ", year),
+                                   TRUE ~ NA_character_),
            segment_encoding = case_when((is.na(female) & is.na(male)) | ((female == -Inf) & (male == -Inf)) ~ NA_character_,
                                         female > male ~ "female",
                                         female < male ~ "male",
@@ -330,11 +337,11 @@ filter_focus_subjects <- select_focus_subjects_normalised %>%
 filter_focus_subject_summaries <- filter_focus_subjects %>%
 
     #filter(!pseudo_point) %>%
-    mutate_at(vars(gender_column_labels, AllEntries), ~ na_if(., -Inf)) %>%
+    mutate_at(vars(all_of(gender_column_labels), AllEntries), ~ na_if(., -Inf)) %>%
 
     group_by(year, SubjectGroup) %>%
     summarise_at(vars(all_of(gender_column_labels), AllEntries), ~ sum(., na.rm = TRUE)) %>%
-    mutate_at(vars(gender_column_labels, AllEntries), ~ if_else(is.na(.) | (. == 0), -Inf, .)) %>%
+    mutate_at(vars(all_of(gender_column_labels), AllEntries), ~ if_else(is.na(.) | (. == 0), -Inf, .)) %>%
 
     mutate(uptake_difference = abs(coalesce(female, 0) - coalesce(male, 0)) / AllEntries,
            rounded_uptake_difference = round(abs(coalesce(female, 0) - coalesce(male, 0)) / AllEntries * 100, 1),
@@ -345,7 +352,14 @@ filter_focus_subject_summaries <- filter_focus_subjects %>%
                            female < male ~ paste(SubjectGroup, "- Uptake by males exceeds females by", paste0(rounded_uptake_difference, "% in"), year),
                            female == male ~ paste(SubjectGroup, "- Gender uptake equal in ", year),
                            TRUE ~ NA_character_),
-           segment_encoding = case_when((is.na(female) & is.na(male)) | ((female == -Inf) & (male == -Inf)) ~ NA_character_,
+           tooltip2 = case_when((is.na(female) & is.na(male)) | ((female == -Inf) & (male == -Inf)) ~ NA_character_,
+                           is.na(female) | (female == -Inf) ~ paste(SubjectGroup, "- No female uptake; male only class in", year),
+                           is.na(male) | (male == -Inf) ~ paste(SubjectGroup, "- No male uptake; female only class in", year),
+                           female > male ~ paste(SubjectGroup, "- Uptake by females exceeds males by", round(female / male, 1), "times", paste0("(", rounded_uptake_difference, "%)"), "in", year),
+                           female < male ~ paste(SubjectGroup, "- Uptake by males exceeds females by", round(male / female, 1), "times", paste0("(", rounded_uptake_difference, "%)"), "in", year),
+                           female == male ~ paste(SubjectGroup, "- Gender uptake equal in ", year),
+                           TRUE ~ NA_character_),
+          segment_encoding = case_when((is.na(female) & is.na(male)) | ((female == -Inf) & (male == -Inf)) ~ NA_character_,
                                         female > male ~ "female",
                                         female < male ~ "male",
                                         female == male ~ "gray75",

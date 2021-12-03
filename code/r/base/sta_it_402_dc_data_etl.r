@@ -204,6 +204,15 @@ computing_offering_all_qualifications <- dbGetQuery(dbConn, paste("SELECT year, 
     mutate_at(vars(qualification), ~ factor(., levels = sqa_qualifications_ordering$qualification))
 
 
+
+time_period_axis_breaks <-
+    data.frame(year = levels(computing_offering_all_qualifications$year),
+               tick_label = as.logical(seq_len(length(levels(computing_offering_all_qualifications$year))) %% 2)) %>%
+
+        mutate_at(vars(year), as.character) %>%
+        mutate_at(vars(tick_label), ~ if_else(., year, ""))
+
+
 ### ###
 
 
