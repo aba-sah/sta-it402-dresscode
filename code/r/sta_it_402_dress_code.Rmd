@@ -28,24 +28,21 @@ output:
 
   .show_hide_element_box {
     #color: #fff;
-    /* padding: 20px; */
     display: none;
-    /* margin-top: 20px; */
   }
 
 ```
-
 
 ```{r global-options, include = FALSE, cache = FALSE}
 
 knitr::opts_chunk$set(out.width = '95%', fig.align = 'center',
                       echo = FALSE, warning = FALSE, message = FALSE)
 
-# fig.dim = c(12, 5), out.height = '100%',
 ```
 
 ```{r libraries_and_utilities}
 
+# libraries commented out called in sourced files
 #library(tidyverse)
 #library(ggtext)
 #library(DBI)
@@ -54,6 +51,7 @@ knitr::opts_chunk$set(out.width = '95%', fig.align = 'center',
 
 library(knitr)
 library(kableExtra)
+
 
 # utilities & c.
 
@@ -66,7 +64,7 @@ source("base/common_interaction.r", local = knitr::knit_global())
 dressCodeTheme <- dressCodeTheme +
         theme(plot.title = element_text(lineheight = 0.8, size = 11, colour = "grey50", face = "bold",
                                           margin = margin(t = 10, b = 10)),
-              axis.text.y = element_markdown(size = 8),
+              axis.text.y = element_text(size = 8), # element_markdown
               axis.text.x = element_text(size = 7.5, angle = 45, vjust = 0.5),
               axis.title = element_text(size = 10),
               legend.title = element_text(size = 9.5), legend.text = element_text(size = 8),
@@ -83,6 +81,7 @@ dbConn <- dbConnect(RSQLite::SQLite(), paste0(path_to_file_store, "/", "sqa-data
 source("base/sta_it_402_dc_data_etl.r", local = knitr::knit_global())
 source("base/sta_it_402_dc_data_parsing.r", local = knitr::knit_global())
 
+# print data to page so (client-based) JS can pick up
 r_dataframe_to_js(sqa_qualifications_ordering$qualification, var_name = "qualifications")
 r_dataframe_to_js(sqa_qualifications_ordering$qualification_label, var_name = "qualification_labels")
 
@@ -90,6 +89,16 @@ r_dataframe_to_js(sqa_qualifications_ordering$qualification_label, var_name = "q
 
 
 ```{js, echo = FALSE}
+$(document).ready(function() {
+  $("#animationWindow").show();
+}
+
+$(window).load(function() {
+  $("#animationWindow").fadeOut("slow");
+  console.log("is this even happening?")
+})
+
+
 /*  adapted from https://khaalipaper.com/javascript/show-hide-div-based-on-dropdown-selection-in-jquery.php#parentHorizontalTab1 */
 
 
@@ -191,7 +200,6 @@ Overview
 
 > SQA ...
 
-
 ## When is Computing Offered?
 
 ```{r, computing_offering_across_qualifications, fig.height = 2.2}
@@ -209,15 +217,19 @@ Row {data-height=100}
 Column
 -----------------------------------------------------------------------
 
-### All Subjects {data-width=480}
+### All Subjects {data-height=600}
 
 
-```{r, gender_distribution_overall, fig.height = 5.5}
+```{r, gender_distribution_static_charts_overall, fig.height = 6.5}
+
+# gender_distribution_overall}
 ```
 
-### Computing {data-width=480}
+### Computing {data-height=600}
 
-```{r, gender_distribution_computing}
+```{r, gender_distribution_static_charts_computing, fig.height = 6.5}
+
+# gender_distribution_computing}
 ```
 
 Column {data-height=150}
@@ -243,7 +255,7 @@ Row {.tabset .tabset-fade}
 
 ### Top 5 Subjects
 
-> __Subject popularity__ varies by gender and over time, as well as qualification and level or stage. These charts show subjects that fell within the top five selected by pupils each year for each qualification (excluding English and Maths). Relatively larger points indicate higher popularity for a particular qualification, and position on the horizontal axis how often a subject was selected across all qualifications over the years. For instance, 100% popularity (on the far right) indicates a subject was in the top 5 every year from 1986 and for all qualifications. Subject popularity overall is also ordered top to bottom.
+> __Subject popularity__ varies by gender and over time, as well as qualification and level or stage. These charts show subjects that fell within the top five selected by pupils each year for each qualification (excluding English and Maths). Relatively larger points indicate higher popularity across all qualifications, and position on the horizontal axis popularity for a qualification for that year. For instance, a medium-sized circle on the far right shows high popularity for a particular qualification, but lower popularity in general, across all qualifications. Subject popularity overall is also ordered top to bottom.
 
 ```{=html}
 <hr width = "85%" hlign = "center" />
@@ -253,7 +265,7 @@ Row {.tabset .tabset-fade}
 
 ####
 
-```{r, top_5_subjects_overall, fig.height = 6, fig.width = 9}
+```{r, top_5_subjects_over_time}
 ```
 
 
