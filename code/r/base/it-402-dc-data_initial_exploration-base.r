@@ -40,8 +40,8 @@ dressCodeTheme <-
 
 
 # evaluation will fail if focus_subject not set in advance
-if (!exists("focus_subject") || is_null(focus_subject) || (str_trim(focus_subject) == "")) 
-    focus_subject <- "computing"
+#if (!exists("focus_subject") || is_null(focus_subject) || (str_trim(focus_subject) == ""))
+    focus_subject <- c("comput", "information systems")
 
 
 formatted_subject_labels_as_expr <- expression(
@@ -440,9 +440,10 @@ getSubjectChanges <-
         return(subject_changes)
     }
 
+
 createSubjectGroups <-
 
-    function(award_data, focus_subject, subject_filter = "", overwrite_subject_group = NULL) {
+    function(award_data, focus_subject, subject_filter = "", generate_common_subject_label = FALSE, overwrite_subject_group = NULL) {
 
         if (is.null(subject_filter))
             subject_filter <- ""
@@ -458,24 +459,52 @@ createSubjectGroups <-
             mutate(SubjectGroup = str_match(Subject, regex(paste0(focus_subject, collapse = "|"), ignore_case = TRUE)))
 
         if (!is.null(overwrite_subject_group)) {
-            search_options <- paste0("^(", paste0(enframe(overwrite_subject_group)$name, collapse = "|"), ")$")
+          
+            if (length(overwrite_subject_group == 1) & !is.na(overwrite_subject_group["all"])) {
+                award_data <- award_data %>%
+                    mutate(SubjectGroup = str_to_title(overwrite_subject_group[enframe(overwrite_subject_group)$name]))
+               
+            } else {
+                search_options <- paste0("^(", paste0(enframe(overwrite_subject_group)$name, collapse = "|"), ")$")
+                
+                # test first that there ARE matches ...
+                if (award_data %>%
+                        filter(str_detect(SubjectGroup, regex(search_options, ignore_case = TRUE))) %>%
+                        nrow() > 0) {
+                    
+                    award_data <- award_data %>%
+                        filter(str_detect(SubjectGroup, regex(search_options, ignore_case = TRUE), negate = TRUE)) %>%
 
-            award_data <- award_data %>%
-                filter(str_detect(Subject, regex(search_options, ignore_case = TRUE), negate = TRUE)) %>%
+                    bind_rows(award_data %>%
+                                  filter(str_detect(SubjectGroup, regex(search_options, ignore_case = TRUE))) %>%
 
-                bind_rows(award_data %>%
-                            filter(Subject == str_match(Subject, regex(search_options, ignore_case = TRUE))) %>%
-                            mutate_at(vars(everything()), as.character) %>%
-                            mutate(SubjectGroup = str_to_title(overwrite_subject_group[str_detect(enframe(overwrite_subject_group)$name, regex(Subject, ignore_case = TRUE))]))
-                )
+                                  left_join(enframe(overwrite_subject_group) %>%
+                                                mutate(across(everything(), ~ str_to_title(.))) %>%
+                                                rename_with(~ c("SubjectGroup", "SubjectGroupOverride"))
+                                           ) %>%
+                                  select(-SubjectGroup) %>%
+                                  rename(SubjectGroup = SubjectGroupOverride)
+
+                    ) # end bind_rows back to subject list
+                }
+            } # end if-else - checkinng for subject group overwrites
         }
+        
+        if (generate_common_subject_label)
+            award_data <- award_data %>%
+                mutate(CommonSubjectLabel = str_match(Subject, regex(paste0(focus_subject, collapse = "|"), ignore_case = TRUE)))
+        else
+            award_data <- award_data %>%
+                mutate(CommonSubjectLabel = NA)
+
+        
+        award_data <- award_data  %>%
+          arrange(SubjectGroup, Subject)
 
 
         invisible(award_data%>%
                     mutate_at(vars(everything()), as.character))
     }
-
-
 
 
 # currently leaving DB connection detail in here but actually running where used

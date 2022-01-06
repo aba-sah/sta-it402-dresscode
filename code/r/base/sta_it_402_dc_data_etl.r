@@ -148,11 +148,21 @@ gender_column_labels <- levels(gender_distribution$gender)
 ##
 # computing uptake across all qualifications
 ##
-focus_subject <- "computing" 
+focus_subject <- default_focus_subject
+
+focus_subject_filter <- ""
+
+for (i in seq_along(focus_subject)) {
+
+    focus_subject_filter <- paste0(focus_subject_filter, "(A.Subject LIKE '%", focus_subject[i], "%')")
+    if (i < length(focus_subject))
+        focus_subject_filter <- paste(focus_subject_filter, "OR ")
+}
+
 
 computing_uptake <- bind_rows(dbGetQuery(dbConn, paste("SELECT A.*, B.NoOfStudents AS AllEntries",
                                                        "FROM sqa_data A, sqa_data B",
-                                                       "WHERE (A.Subject LIKE ", paste0("'%", focus_subject, "%'"), ") AND",
+                                                       "WHERE (", focus_subject_filter, ") AND",
                                                                  "(A.gender = 'female') AND (A.grade = 'Entries') AND",
                                                                  "(B.gender = 'all') AND (B.grade = 'Entries') AND", 
                                                                  "(A.gender <> B.gender) AND (A.qualification = B.qualification) AND",
@@ -160,7 +170,7 @@ computing_uptake <- bind_rows(dbGetQuery(dbConn, paste("SELECT A.*, B.NoOfStuden
                                                       )),
                               dbGetQuery(dbConn, paste("SELECT A.*, B.NoOfStudents AS AllEntries",
                                                          "FROM sqa_data A, sqa_data B",
-                                                         "WHERE (A.Subject LIKE ", paste0("'%", focus_subject, "%'"), ") AND",
+                                                         "WHERE (", focus_subject_filter, ") AND",
                                                                  "(A.gender = 'male') AND (A.grade = 'Entries') AND",
                                                                  "(B.gender = 'all') AND (B.grade = 'Entries') AND", 
                                                                  "(A.gender <> B.gender) AND (A.qualification = B.qualification) AND",
@@ -184,6 +194,17 @@ computing_uptake <- bind_rows(dbGetQuery(dbConn, paste("SELECT A.*, B.NoOfStuden
 # computing across qualifications
 ##
 
+focus_subject <- default_focus_subject
+focus_subject_filter <- ""
+
+for (i in seq_along(focus_subject)) {
+
+    focus_subject_filter <- paste0(focus_subject_filter, "(Subject LIKE '%", focus_subject[i], "%')")
+    if (i < length(focus_subject))
+        focus_subject_filter <- paste(focus_subject_filter, "OR ")
+}
+
+
 computing_offering_all_qualifications <- dbGetQuery(dbConn, paste("SELECT year, qualification FROM sqa_data",
                          "GROUP BY year, qualification",
                          "ORDER BY qualification, year"
@@ -191,17 +212,21 @@ computing_offering_all_qualifications <- dbGetQuery(dbConn, paste("SELECT year, 
                    ) %>%
 
     left_join(dbGetQuery(dbConn, paste("SELECT year, qualification, Subject AS computing_offered FROM sqa_data ",
-                                       "WHERE (Subject LIKE ", paste0("'%", focus_subject, "%'"), ")",
-                                       "GROUP BY year, qualification ",
-                                       "ORDER BY qualification, year"
+                                       "WHERE (", focus_subject_filter, ")",
+                                       "GROUP BY year, qualification, computing_offered",
+                                       "ORDER BY qualification, year, computing_offered"
                                       )
                    )
             ) %>%
 
     mutate_at(vars(computing_offered), ~ !is.na(.)) %>%
+    distinct %>%
 
     mutate_at(vars(year), as.ordered) %>%
     mutate_at(vars(qualification), ~ factor(., levels = sqa_qualifications_ordering$qualification))
+
+
+rm(focus_subject_filter)
 
 
 

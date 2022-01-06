@@ -1,6 +1,10 @@
 library(tidyverse)
 
 focus_subject <- "computing" # use a vector for multiple patterns
+default_focus_subject <- c("comput", "information systems", "data science")
+focus_subject <- default_focus_subject
+
+
 science_subjects <- c("bio", "chem", "physics")
 stem_subjects <- c("math", "statistic", "engineering", "comput", "technical", "bio", "chem", "physics", "physiology")
 

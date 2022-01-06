@@ -31,6 +31,24 @@ formatNumber <-
 formatNumber <- Vectorize(formatNumber)
 
 
+
+formatFraction <-
+    function(input) {
+        
+        if (is.na(as.numeric(input)))
+            return(NA)
+        
+        numberParts <- str_split(as.character(input), , pattern = "\\.", simplify = TRUE)
+        if (is.na(as.numeric(numberParts[2])))
+           return(numberParts[1])
+        
+        return(paste(numberParts[1],
+                     MASS::fractions(as.numeric(paste0("0.", numberParts[2])))))
+    }
+formatFraction <- Vectorize(formatFraction)
+
+
+
 # shared legends
 # adapted from https://stackoverflow.com/a/13650878
 # points to more complex https://github.com/hadley/ggplot2/wiki/Share-a-legend-between-two-ggplot2-graphs
@@ -43,7 +61,7 @@ create_shared_legend <-
         
         return(pseudo_plot$grobs[[legend]])
     }
-
+                            
 
 
 #  adapted from https://maxcandocia.com/article/2020/Aug/30/log-scale-zero-and-negative-values/

@@ -11,13 +11,13 @@ computing_offering_all_qualifications %>%
                        fill = fill_or_not, 
                       ), 
                        size = 1, shape = 21) +
-        khroma::scale_fill_romaO(discrete = TRUE, 
-                                 breaks = computing_offering_all_qualifications$qualification[1], 
-                                 labels = "Computing Offered") + 
         #scale_fill_discrete(na.value = "transparent") +
         khroma::scale_colour_romaO(discrete = TRUE, 
                                  breaks = computing_offering_all_qualifications$qualification[1], 
                                  labels = "Qualification Offered") + 
+        khroma::scale_fill_romaO(discrete = TRUE, 
+                                 breaks = computing_offering_all_qualifications$qualification[1], 
+                                 labels = "Computing Offered") + 
         scale_x_discrete(breaks = time_period_axis_breaks$year,
                          labels = time_period_axis_breaks$tick_label) +
         ylab(NULL) + xlab(NULL) + 
@@ -163,6 +163,8 @@ gender_distribution %>%
                                    
 ## ---- gender_distribution_computing --------
 
+focus_subject_label <- "computing / information systems / data science"
+
 plot1 <- computing_uptake %>%
 
     group_by(year, gender) %>%
@@ -179,8 +181,8 @@ plot1 <- computing_uptake %>%
                        text = paste0(gender, " - ", round(PercentageOfStudents, 2) * 100, "% in ", year))) +
                 geom_segment(aes(xend = 0, yend = year, colour = gender), size = 1) +
                 geom_point(aes(colour = gender), size = 0.75) +
-                xlab(paste0("\nGender Distribution - ", str_to_title(focus_subject))) + 
-                     #paste0("\nGender Distribution - ", str_to_title(focus_subject), "\n",
+                xlab(paste0("\nGender Distribution - ", str_to_title(focus_subject_label))) +
+                     #paste0("\nGender Distribution - ", str_to_title(focus_subject_label), "\n",
                      #       str_wrap(paste0(sqa_qualifications_ordering$qualification, collapse = ", "), width = 60, exdent = 4))) + 
                 ylab(NULL) +
                 scale_y_discrete(breaks = time_period_axis_breaks$year, labels = time_period_axis_breaks$tick_label) +
@@ -195,13 +197,16 @@ plot1 <- computing_uptake %>%
                       axis.text.y = element_text(size = 9), 
                       axis.title = element_text(size = 11),
                       legend.title = element_blank(), 
-                      legend.position = "bottom")             
+                      legend.position = "bottom"
+                     )             
 
 convertToPlotly(plot1, renameTraces = TRUE, regexpr = genderRegex, height = 450, width = 800, maxMargin = 1) %>% 
-    layout(legend = list(orientation = 'h', yanchor = "bottom"),
+    layout(#legend = list(orientation = 'h', yanchor = "bottom"),
            margin = list(l = 1)) %>%
     config(displayModeBar = FALSE)
-                                   
+
+rm(focus_subject_label)
+
 
 ## ---- summary_tables_gender_distribution_computing --------
        
@@ -238,7 +243,7 @@ top_5_subjects  %>%
         #scale_shape_manual(values = c(-0x2640L, -0x2642L)) + # c("\u2640", "\u2642")
         scale_x_continuous(labels = function(x) scales::percent(abs(x))) + 
         ylab(NULL) + xlab("Popularity Over Time") +
-        guides(size = FALSE) +        
+        guides(size = "none") +
         dressCodeTheme +
         theme(legend.title = element_blank(), legend.text = element_text(size = 9),
               axis.text.x = element_text(size = 11, angle = 0, vjust = 0),
@@ -251,7 +256,6 @@ top_5_subjects  %>%
                           
 
 ## ---- top_5_subjects_over_time --------
-
 
 qualifications <- levels(top_5_subjects$qualification)
 years <- levels(top_5_subjects$year)
@@ -276,7 +280,7 @@ for (i in seq_along(years)) {
                                 visible = (i == 1),
                                 name = ~qualification, # paste(qualification, "-", gender), 
 
-                                type = "scatter", 
+                                type = "scatter",
                                 mode = "markers", 
                                 marker = ~ list(#symbol = "circle", 
                                                 sizemode = "diameter", opacity = 0.65, 
@@ -305,28 +309,30 @@ for (i in seq_along(years)) {
 plot_tmp %>%
     layout(title = "Top 5 Subjects across Qualifications",
            xaxis = list(range = c(0, 1.05), tickformat = ".0%", tickfont = tickFont, title = list(text = "Popularity over Time")),
-           yaxis = list(tickfont = list(size = 11), title = list(text = "", font = list(size = 20)), 
+           yaxis = list(tickfont = list(size = 10), title = list(text = "", font = list(size = 20)), 
                         autotick = FALSE, type = "category", categoryarray = levels(top_5_subjects$Subject.label), categoryorder = "array"), 
            list(itemsizing = "constant", itemwidth = 30), # being ignored ...
-           margin = list(l = 5, t = 2, b = 2, pad = 5),
+           margin = list(l = 5, b = 2, pad = 5),
            sliders = list(list(active = 0,
                                currentvalue = list(prefix = "Year: "), 
                                font = list(color = "grey"),
                                steps = steps, 
                                pad = list(t = 35)))
-    )
+    ) %>%
+
+    partial_bundle() %>%
+    toWebGL()
 
 rm(data_trace)
                                   
                                    
 ## ---- computing_uptake_over_time --------
                            
-focus_subject <- "computing"
+focus_subject <- default_focus_subject
 
-plot_tmp <- plot_ly(height = 330, width = 1200, 
-                    data = filter_focus_subject_summaries %>%
-                                filter(str_detect(SubjectGroup, regex(focus_subject, ignore_case = TRUE))))
-
+plot_tmp <- plot_ly(height = 330, width = 1200,
+                    data = filter_focus_subject_group_summaries %>%
+                                filter(str_detect(SubjectGroup, regex(paste0(focus_subject, collapse = "|"), ignore_case = TRUE))))
 
 plot_tmp <- add_trace(plot_tmp,
 
@@ -337,7 +343,7 @@ plot_tmp <- add_trace(plot_tmp,
                                             formatNumber(get(gender_column_labels[1])), ") in ", year),
                         name = gender_column_labels[1], 
 
-                        type = "scatter", 
+                        type = "scatter",
                         mode = "markers", 
                         hoverinfo = "text", 
 
@@ -355,7 +361,7 @@ plot_tmp <- add_trace(plot_tmp,
                                             formatNumber(get(gender_column_labels[2])), ") in ", year),
                         name = gender_column_labels[2], 
 
-                        type = "scatter", 
+                        type = "scatter",
                         mode = "markers", 
                         hoverinfo = "text", 
 
@@ -442,10 +448,10 @@ plot_tmp %>%
                                    
 ## ---- computing_uptake_over_time_by_qualification --------
 
-focus_subject <- "computing"
+focus_subject <- default_focus_subject
 
-qualifications <- levels(filter_focus_subjects$qualification)
-genders <- gender_column_labels #levels(filter_focus_subjects$gender)
+qualifications <- levels(filter_focus_subject_groups$qualification)
+genders <- gender_column_labels #levels(filter_focus_subject_groups$gender)
 additional_traces <- 4
 
 steps <- list()
@@ -454,8 +460,8 @@ plot_tmp <- plot_ly(height = 380, width = 1200)
 for (i in seq_along(qualifications)) {
     
     plot_tmp <- add_trace(plot_tmp,
-                          data = filter_focus_subjects %>%
-                                  filter(str_detect(SubjectGroup, regex(focus_subject, ignore_case = TRUE))) %>%
+                          data = filter_focus_subject_groups %>%
+                                  filter(str_detect(SubjectGroup, regex(paste0(focus_subject, collapse = "|"), ignore_case = TRUE))) %>%
                                   filter(qualification == qualifications[i]),
 
                             x = ~ year,
@@ -468,7 +474,7 @@ for (i in seq_along(qualifications)) {
 
                             name = gender_column_labels[1], 
 
-                            type = "scatter", 
+                            type = "scatter",
                             mode = "markers", 
                             hoverinfo = "text", 
 
@@ -491,7 +497,7 @@ for (i in seq_along(qualifications)) {
 
                             name = gender_column_labels[2], 
 
-                            type = "scatter", 
+                            type = "scatter",
                             mode = "markers", 
                             hoverinfo = "text", 
 
@@ -589,7 +595,7 @@ plot_tmp %>%
     layout(#title = paste("Gender Distribution -", str_to_title(focus_subject)),
            xaxis = list(title = list(text = ""), tickfont = list(size = 10), tickangle = -45, showgrid = FALSE, showline = FALSE),
            yaxis = list(tickfont = tickFont, showgrid = TRUE, showline = TRUE,
-                        title = list(text = paste("No. of Students -", str_to_title(focus_subject)), font = list(size = 16)), rangemode = "tozero"), 
+                        title = list(text = "No. of Students - Computing", font = list(size = 16)), rangemode = "tozero"),
            #legend = list(itemclick = FALSE, itemdoubleclick = FALSE),
            margin = list(l = 5),
            sliders = list(list(active = 0, pad = list(t = 35), 
@@ -602,9 +608,9 @@ plot_tmp %>%
                            
 ## ---- computing_uptake_over_time_cf_english_maths --------
 
-focus_subject <- c("computing", "english", "math")
+focus_subject <- c("computing", "english", "maths")
 
-plot1 <- filter_focus_subject_summaries %>%
+plot1 <- filter_focus_subject_group_summaries %>%
             filter(str_detect(SubjectGroup, regex(paste(focus_subject, collapse = "|"), ignore_case = TRUE))) %>%
 
                            
@@ -650,9 +656,9 @@ convertToPlotly(plot1, height = 450, width = 2000) %>%
                                
 ## ---- computing_uptake_over_time_cf_english_maths_summary --------
 
-focus_subject <- c("computing", "english", "math")
+focus_subject <- c("computing", "english", "maths")
 
-plot1 <- filter_focus_subject_summaries %>%
+plot1 <- filter_focus_subject_group_summaries %>%
             filter(str_detect(SubjectGroup, regex(paste(focus_subject, collapse = "|"), ignore_case = TRUE))) %>%
             mutate(tooltip = paste(SubjectGroup, "-", formatNumber(AllEntries), "entries in", year)) %>%
 
@@ -684,13 +690,13 @@ convertToPlotly(plot1, height = 350, width = 2000) %>%
 
 plots_cf_english_maths <- list()
 qualifications <- sqa_qualifications_ordering$qualification
-
+focus_subject <- c("computing", "english", "maths")
 
 for (i in seq_along(qualifications)) {
 
 
-    plots_cf_english_maths[[i]] <- filter_focus_subjects %>%
-        filter(str_detect(SubjectGroup, regex(paste(focus_subjects[[1]], collapse = "|"), ignore_case = TRUE))) %>%
+    plots_cf_english_maths[[i]] <- filter_focus_subject_groups %>%
+        filter(str_detect(SubjectGroup, regex(paste(focus_subject, collapse = "|"), ignore_case = TRUE))) %>%
         filter(qualification == qualifications[i]) %>% 
         mutate(SubjectGroup = droplevels(SubjectGroup),
                SubjectGroup = fct_reorder(SubjectGroup, AllEntries)) %>%
@@ -704,7 +710,7 @@ for (i in seq_along(qualifications)) {
                             y = ~ get(gender_column_labels[2]), 
                             color = gender_column_labels[2], 
                             colors = gender_colour_scheme,
-                            type = "scatter", 
+                            type = "scatter",
                             mode = "markers",
                             text = ~ paste0(SubjectGroup, " at ", qualification, " - ", gender_column_labels[2], ": ", 
                                           round(get(gender_column_labels[2]) / AllEntries, 3) * 100, "% of entries in ", year),
@@ -719,7 +725,7 @@ for (i in seq_along(qualifications)) {
                           y = ~ get(gender_column_labels[1]), 
                           color = gender_column_labels[1], 
                           colors = gender_colour_scheme,
-                          type = "scatter", 
+                          type = "scatter",
                           mode = "markers",
                           text = ~ paste0(SubjectGroup, " at ", qualification, " - ", gender_column_labels[1], ": ", 
                                           round(get(gender_column_labels[1]) / AllEntries, 3) * 100, "% of entries in ", year),
@@ -735,7 +741,7 @@ for (i in seq_along(qualifications)) {
                             y = ~ (get(gender_column_labels[1]) + get(gender_column_labels[2])) / 2, 
                             text = ~ tooltip, 
                             color = I("transparent"),
-                            type = "scatter", 
+                            type = "scatter",
                             mode = "markers",
                             #marker = list(opacity = 0, size = 0), # ignores size - need opacity or colour to prevent visibility
                             text = ~ tooltip,
@@ -803,7 +809,9 @@ for (i in seq_along(qualifications)) {
                   .keep = TRUE) %>%
             subplot(nrows = 1, margin = 0.0035, shareX = TRUE, shareY = TRUE) %>%
 
-            plotly_build()
+            plotly_build() %>%
+            partial_bundle() %>%
+            toWebGL()
 
 
     female_legend <- FALSE
@@ -830,12 +838,11 @@ for (i in seq_along(qualifications)) {
 rm(female_legend, male_legend)
 
                            
-                           
 ## ---- computing_uptake_over_time_cf_sciences --------
 
-focus_subject <- c("computing", "biology", "physics", "chemistry") 
+focus_subject <- c(default_focus_subject, "biology", "physics", "chemistry")
 
-plot1 <- filter_focus_subject_summaries %>%
+plot1 <- filter_focus_subject_group_summaries %>%
             filter(str_detect(SubjectGroup, regex(paste(focus_subject, collapse = "|"), ignore_case = TRUE))) %>%
 
                            
@@ -881,9 +888,9 @@ convertToPlotly(plot1, height = 450, width = 2500) %>%
                                
 ## ---- computing_uptake_over_time_cf_sciences_summary --------
 
-focus_subject <- c("computing", "biology", "physics", "chemistry") 
+focus_subject <- c(default_focus_subject, "biology", "physics", "chemistry")
 
-plot1 <- filter_focus_subject_summaries %>%
+plot1 <- filter_focus_subject_group_summaries %>%
             filter(str_detect(SubjectGroup, regex(paste(focus_subject, collapse = "|"), ignore_case = TRUE))) %>%
             mutate(tooltip = paste(SubjectGroup, "-", formatNumber(AllEntries), "entries in", year)) %>%
 
@@ -913,6 +920,13 @@ convertToPlotly(plot1, height = 350, width = 2500) %>%
                            
 ## ---- computing_uptake_over_time_cf_sciences_by_qualification --------
 
+focus_subject <- select_focus_subjects %>%
+
+                        filter(SubjectGroup == "Sciences") %>%
+                        distinct(CommonSubjectLabel) %>%
+                        deframe() %>%
+                        as.character()
+focus_subject <- c("computing", focus_subject)
 
 
 plots_cf_sciences <- list()
@@ -923,7 +937,7 @@ for (i in seq_along(qualifications)) {
 
 
     plots_cf_sciences[[i]] <- filter_focus_subjects %>%
-        filter(str_detect(SubjectGroup, regex(paste(focus_subjects[[2]], collapse = "|"), ignore_case = TRUE))) %>%
+        filter(str_detect(SubjectGroup, regex(paste(focus_subject, collapse = "|"), ignore_case = TRUE))) %>%
         filter(qualification == qualifications[i]) %>%
         mutate(SubjectGroup = droplevels(SubjectGroup),
                SubjectGroup = fct_reorder(SubjectGroup, AllEntries)) %>%
@@ -1036,7 +1050,9 @@ for (i in seq_along(qualifications)) {
                   .keep = TRUE) %>%
             subplot(nrows = 1, margin = 0.0035, shareX = TRUE, shareY = TRUE) %>%
 
-            plotly_build()
+            plotly_build() %>%
+            partial_bundle() %>%
+            toWebGL()
 
 
     female_legend <- FALSE
@@ -1062,7 +1078,6 @@ for (i in seq_along(qualifications)) {
 
 rm(female_legend, male_legend)
 
-                           
                            
 ## ----  --------
 

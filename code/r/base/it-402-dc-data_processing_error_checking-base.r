@@ -16,11 +16,11 @@ checkFocusSubjectListed <-
          
         print(awardFile)
         if (!exists("focus_subject") || is_null(focus_subject) || (str_trim(focus_subject) == "")) {
-            focus_subject <- "computing"
-            print(paste("No focus subject specified; defaulting to subjects containing: ", focus_subject))
+            focus_subject <- c("comput", "information systems")
+            print(paste("No focus subject specified; defaulting to subjects containing: ", paste0(focus_subject, collapse = ", ")))
             
         } else 
-            print(paste("Search on focus subject (containing term) '", focus_subject, "'", sep = ""))
+            print(paste("Search on focus subject (containing term) '", paste0(focus_subject, collapse = ", "), "'", sep = ""))
         
         if (glimpseContent)
             print(glimpse(awardData))
@@ -28,7 +28,7 @@ checkFocusSubjectListed <-
         result <- awardData %>%
             select(Subject) %>%
 
-            filter(str_detect(Subject, regex(focus_subject, ignore_case = TRUE))) %>%
+            filter(str_detect(Subject, regex(paste0(focus_subject, collapse = "|"), ignore_case = TRUE))) %>%
             verify(nrow(.) > 0, error_fun = just_warn) 
         
         if (!listSubjects)    
@@ -53,7 +53,7 @@ checkDataAsPercentageOnly <-
             redundant_column_flags <- c("-percentage*", "-COMP", "-PassesUngradedCourses")
         
         awardData %>%
-            select(-matches(c(redundant_column_flags, "all-Entries"))) %>% # "-percentage")) %>%
+            select(- matches(c(redundant_column_flags, "all-Entries"))) %>% # "-percentage")) %>%
             select(matches(gender_options)) %>%
             verify(ncol(.) > 0, error_fun = just_warn) %>%
         
@@ -84,7 +84,7 @@ checkDistributionByGenderErrors <-
                 summarise(data_as_counts = (ncol(.) == 0)) == TRUE) { 
             
             awardData <- awardData %>%
-                select(-NumberOfCentres) %>%
+                select(- any_of("NumberOfCentres")) %>%
                 pivot_longer(!c(Subject), names_to = "grade", values_to = "PercentageOfStudents") %>%
                 separate("grade", c("gender", "grade"), extra = "merge") %>%
                 mutate_at(c("gender", "grade"), as.factor) %>%
@@ -118,7 +118,7 @@ checkDistributionByGenderErrors <-
 
             awardData <- awardData %>%
 
-                select(-NumberOfCentres) %>%
+                select(- any_of("NumberOfCentres")) %>%
                 mutate_at(vars(starts_with("male")), ~(. / `all-Entries`)) %>%
                 mutate_at(vars(starts_with("female")), ~(. / `all-Entries`)) %>%
                 select(-(starts_with("all") & !ends_with("-Entries"))) %>%
@@ -177,7 +177,7 @@ checkSubjectsWithNoEntries <-
                 select(row_id, Subject), 
                   
             awardData %>%
-                select(-c(Subject, NumberOfCentres)) %>%
+                select(- any_of(c("Subject", "NumberOfCentres"))) %>%
                 mutate_at(vars(starts_with("male-") | starts_with("female-") | starts_with("all-")), as.character) %>%
                 mutate_at(vars(starts_with("male-") | starts_with("female-") | starts_with("all-")), parse_number) %>%
                 suppressWarnings %>%

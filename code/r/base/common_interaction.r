@@ -80,6 +80,7 @@ convertToPlotly <-
             
 
         plot_tmp <- ggplotly(ggPlot, tooltip = tooltip, height = height, width = width) %>%
+            partial_bundle() %>%        
 
             style(hoveron = "points", hoverinfo = "text", hoverlabel = list(bgcolor = "white")) %>%
             layout(xaxis = xaxis, yaxis = yaxis, legend = legend,
