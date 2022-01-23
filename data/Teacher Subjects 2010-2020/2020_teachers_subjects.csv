@@ -1,0 +1,46 @@
+Subject,MainSubject-female,MainSubject-male,MainSubject-all,TopSubjects-female,TopSubjects-male,TopSubjects-all
+English," 1,888 ", 686 ," 2,575 ","2,007",727,"2,734"
+French, 536 , 119 , 655 ,717,143,861
+German, 74 , 14 , 88 ,206,47,253
+Spanish, 106 , 26 , 132 ,384,87,471
+Gaelic, 42 , 20 , 61 ,49,24,73
+Italian, 8 , * , 10 ,39,8,47
+English as Additional Language, * , * , 8 ,*,*,22
+Community Languages, * , * , 5 ,*,*,5
+Other Modern Languages, 319 , 69 , 387 ,350,78,428
+Classical Studies , * , * , 11 ,24,16,40
+,  ,  ,  ,,,
+Mathematics," 1,430 ", 982 ," 2,412 ","1,493","1,067","2,560"
+Biology, 982 , 329 ," 1,312 ","1,087",385,"1,471"
+Chemistry, 645 , 354 , 999 ,728,420,"1,148"
+General Science, 74 , 77 , 151 ,943,659,"1,602"
+Physics, 267 , 557 , 824 ,308,623,931
+,  ,  ,  ,,,
+Economics ,*, * , 1 ,44,17,61
+Geography, 496 , 258 , 753 ,582,305,886
+History, 551 , 382 , 933 ,744,511,"1,255"
+Religious Education, 391 , 211 , 603 ,634,329,963
+Modern Studies, 401 , 252 , 653 ,681,438,"1,119"
+Media Studies, * , * , 13 ,82,43,125
+Business Studies, 723 , 201 , 924 ,802,229,"1,032"
+Computing Studies, 253 , 341 , 595 ,417,428,845
+Home Economics, 746 , 28 , 775 ,777,30,807
+Technical Education, 403 , 820 ," 1,223 ",428,847,"1,275"
+PSE/Guidance, 386 , 162 , 548 ,785,364,"1,149"
+,  ,  ,  ,,,
+Art , 890 , 242 ," 1,132 ",911,248,"1,160"
+Music, 675 , 293 , 967 ,706,301,"1,007"
+Physical Education, 916 ," 1,040 "," 1,956 ",989,"1,071","2,059"
+Speech and Drama , 342 , 97 , 440 ,410,114,524
+,  ,  ,  ,,,
+Learning support , 643 , 192 , 835 ,743,222,966
+,  ,  ,  ,,,
+Additional support needs-general, 121 , 23 , 144 ,142,28,170
+Additional support needs-behavioural support, 52 , 19 , 71 ,76,30,106
+Additional support needs-learning difficulties , 147 , 33 , 179 ,179,45,223
+Additional support needs-physical disabilities, * , * , 7 ,14,7,21
+Hearing impairment, * , * , 24 ,*,*,27
+Visual impairment, * , * , 7 ,*,*,8
+,  ,  ,  ,,,
+Other / not known , 152 , 59 , 211 ,"1,025",547,"1,572"
+Not known,0,0, - ,"10,819","5,896","16,716"
