@@ -28,21 +28,24 @@ output:
 
   .show_hide_element_box {
     #color: #fff;
+    /* padding: 20px; */
     display: none;
+    /* margin-top: 20px; */
   }
 
 ```
+
 
 ```{r global-options, include = FALSE, cache = FALSE}
 
 knitr::opts_chunk$set(out.width = '95%', fig.align = 'center',
                       echo = FALSE, warning = FALSE, message = FALSE)
 
+# fig.dim = c(12, 5), out.height = '100%',
 ```
 
 ```{r libraries_and_utilities}
 
-# libraries commented out called in sourced files
 #library(tidyverse)
 #library(ggtext)
 #library(DBI)
@@ -51,7 +54,6 @@ knitr::opts_chunk$set(out.width = '95%', fig.align = 'center',
 
 library(knitr)
 library(kableExtra)
-
 
 # utilities & c.
 
@@ -81,7 +83,6 @@ dbConn <- dbConnect(RSQLite::SQLite(), paste0(path_to_file_store, "/", "sqa-data
 source("base/sta_it_402_dc_data_etl.r", local = knitr::knit_global())
 source("base/sta_it_402_dc_data_parsing.r", local = knitr::knit_global())
 
-# print data to page so (client-based) JS can pick up
 r_dataframe_to_js(sqa_qualifications_ordering$qualification, var_name = "qualifications")
 r_dataframe_to_js(sqa_qualifications_ordering$qualification_label, var_name = "qualification_labels")
 
@@ -89,16 +90,6 @@ r_dataframe_to_js(sqa_qualifications_ordering$qualification_label, var_name = "q
 
 
 ```{js, echo = FALSE}
-$(document).ready(function() {
-  $("#animationWindow").show();
-}
-
-$(window).load(function() {
-  $("#animationWindow").fadeOut("slow");
-  console.log("is this even happening?")
-})
-
-
 /*  adapted from https://khaalipaper.com/javascript/show-hide-div-based-on-dropdown-selection-in-jquery.php#parentHorizontalTab1 */
 
 
@@ -127,6 +118,7 @@ $("#plot_options_cf_english_maths").ready(function() {
 
         $(".show_hide_element_box").not("." + optionValue).hide();
         $("." + optionValue).show();
+        window.scrollTo(0, 10000);
 
       } else {
         $(".show_hide_element_box").hide();
@@ -152,6 +144,7 @@ $("#plot_options_cf_sciences").ready(function() {
 
         $(".show_hide_element_box").not("." + optionValue).hide();
         $("." + optionValue).show();
+        window.scrollTo(0, 10000);
 
       } else {
         $(".show_hide_element_box").hide();
@@ -200,9 +193,10 @@ Overview
 
 > SQA ...
 
+
 ## When is Computing Offered?
 
-```{r, computing_offering_across_qualifications, fig.height = 2.2}
+```{r, computing_offering_across_qualifications, fig.height = 2.8}
 ```
 
 
@@ -317,6 +311,12 @@ Row {.tabset .tabset-fade}
   <div class="sqa_qualification_plot_cf_english_maths_6 show_hide_element_box"> `r plots_cf_english_maths[[6]] ` </div>
   <div class="sqa_qualification_plot_cf_english_maths_7 show_hide_element_box"> `r plots_cf_english_maths[[7]] ` </div>
   <div class="sqa_qualification_plot_cf_english_maths_8 show_hide_element_box"> `r plots_cf_english_maths[[8]] ` </div>
+  <div class="sqa_qualification_plot_cf_english_maths_9 show_hide_element_box"> `r plots_cf_english_maths[[9]] ` </div>
+  <div class="sqa_qualification_plot_cf_english_maths_10 show_hide_element_box"> `r plots_cf_english_maths[[10]] ` </div>
+  <div class="sqa_qualification_plot_cf_english_maths_11 show_hide_element_box"> `r plots_cf_english_maths[[11]] ` </div>
+  <div class="sqa_qualification_plot_cf_english_maths_12 show_hide_element_box"> `r plots_cf_english_maths[[12]] ` </div>
+  <div class="sqa_qualification_plot_cf_english_maths_13 show_hide_element_box"> `r plots_cf_english_maths[[13]] ` </div>
+  <div class="sqa_qualification_plot_cf_english_maths_14 show_hide_element_box"> `r plots_cf_english_maths[[14]] ` </div>
 
 </div>
 
@@ -358,6 +358,12 @@ Row {.tabset .tabset-fade}
   <div class="sqa_qualification_plot_cf_sciences_6 show_hide_element_box"> `r plots_cf_sciences[[6]] ` </div>
   <div class="sqa_qualification_plot_cf_sciences_7 show_hide_element_box"> `r plots_cf_sciences[[7]] ` </div>
   <div class="sqa_qualification_plot_cf_sciences_8 show_hide_element_box"> `r plots_cf_sciences[[8]] ` </div>
+  <div class="sqa_qualification_plot_cf_sciences_9 show_hide_element_box"> `r plots_cf_sciences[[9]] ` </div>
+  <div class="sqa_qualification_plot_cf_sciences_10 show_hide_element_box"> `r plots_cf_sciences[[10]] ` </div>
+  <div class="sqa_qualification_plot_cf_sciences_11 show_hide_element_box"> `r plots_cf_sciences[[11]] ` </div>
+  <div class="sqa_qualification_plot_cf_sciences_12 show_hide_element_box"> `r plots_cf_sciences[[12]] ` </div>
+  <div class="sqa_qualification_plot_cf_sciences_13 show_hide_element_box"> `r plots_cf_sciences[[13]] ` </div>
+  <div class="sqa_qualification_plot_cf_sciences_14 show_hide_element_box"> `r plots_cf_sciences[[14]] ` </div>
 
 </div>
 
