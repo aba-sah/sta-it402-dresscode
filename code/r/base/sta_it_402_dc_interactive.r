@@ -262,7 +262,7 @@ years <- levels(top_5_subjects$year)
 
 steps <- list()
 
-plot_tmp <- plot_ly(height = 950, width = 1200)
+plot_tmp <- plot_ly(height = 980, width = 1200)
 
 for (i in seq_along(years)) {
 
@@ -309,30 +309,31 @@ for (i in seq_along(years)) {
 plot_tmp %>%
     layout(title = "Top 5 Subjects across Qualifications",
            xaxis = list(range = c(0, 1.05), tickformat = ".0%", tickfont = tickFont, title = list(text = "Popularity over Time")),
-           yaxis = list(tickfont = list(size = 10), title = list(text = "", font = list(size = 20)), 
-                        autotick = FALSE, type = "category", categoryarray = levels(top_5_subjects$Subject.label), categoryorder = "array"), 
+           yaxis = list(tickfont = list(size = 8), title = list(text = ""), #font = list(size = 20)),
+                        autotick = FALSE, type = "category", categoryarray = levels(top_5_subjects$Subject.label), categoryorder = "array"),
            list(itemsizing = "constant", itemwidth = 30), # being ignored ...
            margin = list(l = 5, b = 2, pad = 5),
            sliders = list(list(active = 0,
-                               currentvalue = list(prefix = "Year: "), 
+                               currentvalue = list(prefix = "Year: "),
                                font = list(color = "grey"),
-                               steps = steps, 
+                               steps = steps,
                                pad = list(t = 35)))
-    ) %>%
+    ) #%>%
 
-    partial_bundle() %>%
-    toWebGL()
+#    partial_bundle(local = FALSE) %>%
+#    #mapToPlotlyBasicCDN() %>%
+#    toWebGL()
 
 rm(data_trace)
                                   
                                    
 ## ---- computing_uptake_over_time --------
                            
-focus_subject <- default_focus_subject
-
 plot_tmp <- plot_ly(height = 330, width = 1200,
                     data = filter_focus_subject_group_summaries %>%
-                                filter(str_detect(SubjectGroup, regex(paste0(focus_subject, collapse = "|"), ignore_case = TRUE))))
+                                #filter(str_detect(SubjectGroup, regex(paste0(focus_subject, collapse = "|"), ignore_case = TRUE))))
+                                filter(SubjectGroup == "Computing"))
+
 
 plot_tmp <- add_trace(plot_tmp,
 
@@ -440,7 +441,7 @@ plot_tmp %>%
     layout(#legend = list(itemclick = FALSE, itemdoubleclick = FALSE), #orientation = 'h', yanchor = "bottom", y = -2.5), 
            xaxis = list(tickfont = list(size = 10), tickangle = -45, title = list(text = ""), standoff = -5), #showgrid = FALSE),
            yaxis = list(tickfont = tickFont, showgrid = TRUE, showline = TRUE, 
-                        title = list(text = paste("No. of Students -", str_to_title(focus_subject)), font = list(size = 16))), 
+                        title = list(text = paste("No. of Students - ", str_to_title("Computing Subjects")), font = list(size = 16))),
            margin = list(b = 5) #, t = -25)
           ) # end layout
                            
@@ -461,7 +462,8 @@ for (i in seq_along(qualifications)) {
     
     plot_tmp <- add_trace(plot_tmp,
                           data = filter_focus_subject_groups %>%
-                                  filter(str_detect(SubjectGroup, regex(paste0(focus_subject, collapse = "|"), ignore_case = TRUE))) %>%
+                                  #filter(str_detect(SubjectGroup, regex(paste0(focus_subject, collapse = "|"), ignore_case = TRUE))) %>%
+                                  filter(SubjectGroup == "Computing") %>%
                                   filter(qualification == qualifications[i]),
 
                             x = ~ year,
@@ -598,10 +600,14 @@ plot_tmp %>%
                         title = list(text = "No. of Students - Computing", font = list(size = 16)), rangemode = "tozero"),
            #legend = list(itemclick = FALSE, itemdoubleclick = FALSE),
            margin = list(l = 5),
-           sliders = list(list(active = 0, pad = list(t = 35), 
-                               currentvalue = list(prefix = "Qualification: "), 
-                               font = list(color = "grey"),
-                               steps = steps)) 
+#           sliders = list(list(active = 0, pad = list(t = 35),
+#                               currentvalue = list(prefix = "Qualification: "),
+#                               font = list(color = "grey"),
+#                               steps = steps)),
+           updatemenus = list(list(#active = (which(str_detect(providers, fixed(label_all_bicycle_providers, TRUE))) - 1),
+                                   x = 0.2, y = 1.15, #direction = "up",
+                                   buttons = steps
+                                )) # end dropdown
           ) # end layout
          
                            
@@ -611,8 +617,8 @@ plot_tmp %>%
 focus_subject <- c("computing", "english", "maths")
 
 plot1 <- filter_focus_subject_group_summaries %>%
-            filter(str_detect(SubjectGroup, regex(paste(focus_subject, collapse = "|"), ignore_case = TRUE))) %>%
-
+            #filter(str_detect(SubjectGroup, regex(paste(focus_subject, collapse = "|"), ignore_case = TRUE))) %>%
+            filter(SubjectGroup %in% snakecase::to_upper_camel_case(focus_subject)) %>%
                            
     ggplot(aes(x = fct_reorder(SubjectGroup, AllEntries))) +
         geom_segment(aes(y = get(gender_column_labels[1]), yend = get(gender_column_labels[2]), xend = SubjectGroup, 
@@ -659,7 +665,8 @@ convertToPlotly(plot1, height = 450, width = 2000) %>%
 focus_subject <- c("computing", "english", "maths")
 
 plot1 <- filter_focus_subject_group_summaries %>%
-            filter(str_detect(SubjectGroup, regex(paste(focus_subject, collapse = "|"), ignore_case = TRUE))) %>%
+            #filter(str_detect(SubjectGroup, regex(paste(focus_subject, collapse = "|"), ignore_case = TRUE))) %>%
+            filter(SubjectGroup %in% snakecase::to_upper_camel_case(focus_subject)) %>%
             mutate(tooltip = paste(SubjectGroup, "-", formatNumber(AllEntries), "entries in", year)) %>%
 
                            
@@ -696,8 +703,9 @@ for (i in seq_along(qualifications)) {
 
 
     plots_cf_english_maths[[i]] <- filter_focus_subject_groups %>%
-        filter(str_detect(SubjectGroup, regex(paste(focus_subject, collapse = "|"), ignore_case = TRUE))) %>%
-        filter(qualification == qualifications[i]) %>% 
+        #filter(str_detect(SubjectGroup, regex(paste(focus_subject, collapse = "|"), ignore_case = TRUE))) %>%
+        filter(SubjectGroup %in% snakecase::to_upper_camel_case(focus_subject)) %>%
+        filter(qualification == qualifications[i]) %>%
         mutate(SubjectGroup = droplevels(SubjectGroup),
                SubjectGroup = fct_reorder(SubjectGroup, AllEntries)) %>%
 
@@ -809,9 +817,10 @@ for (i in seq_along(qualifications)) {
                   .keep = TRUE) %>%
             subplot(nrows = 1, margin = 0.0035, shareX = TRUE, shareY = TRUE) %>%
 
-            plotly_build() %>%
-            partial_bundle() %>%
-            toWebGL()
+            plotly_build() #%>%
+#            partial_bundle(local = FALSE) %>%
+#            #mapToPlotlyBasicCDN() %>%
+#            toWebGL()
 
 
     female_legend <- FALSE
@@ -819,12 +828,12 @@ for (i in seq_along(qualifications)) {
 
     for (j in seq_along(plots_cf_english_maths[[i]]$x$data)) {
 
-        if (plots_cf_english_maths[[i]]$x$data[[j]]$name == gender_column_labels[1]) {
+        if (!female_legend & (plots_cf_english_maths[[i]]$x$data[[j]]$name == gender_column_labels[1])) {
 
             plots_cf_english_maths[[i]]$x$data[[j]]$showlegend <- TRUE
             female_legend <- !female_legend
 
-        } else if (plots_cf_english_maths[[i]]$x$data[[j]]$name == gender_column_labels[2]) {
+        } else if (!male_legend & (plots_cf_english_maths[[i]]$x$data[[j]]$name == gender_column_labels[2])) {
 
             plots_cf_english_maths[[i]]$x$data[[j]]$showlegend <- TRUE
             male_legend <- !male_legend
@@ -840,11 +849,11 @@ rm(female_legend, male_legend)
                            
 ## ---- computing_uptake_over_time_cf_sciences --------
 
-focus_subject <- c(default_focus_subject, "biology", "physics", "chemistry")
+focus_subject <- c("computing", "biology", "physics", "chemistry")
 
-plot1 <- filter_focus_subject_group_summaries %>%
-            filter(str_detect(SubjectGroup, regex(paste(focus_subject, collapse = "|"), ignore_case = TRUE))) %>%
-
+plot1 <- filter_focus_subject_summaries %>%
+            #filter(str_detect(SubjectGroup, regex(paste(focus_subject, collapse = "|"), ignore_case = TRUE))) %>%
+            filter(SubjectGroup %in% snakecase::to_upper_camel_case(focus_subject)) %>%
                            
     ggplot(aes(x = fct_reorder(SubjectGroup, AllEntries))) +
         geom_segment(aes(y = get(gender_column_labels[1]), yend = get(gender_column_labels[2]), xend = SubjectGroup, 
@@ -888,10 +897,11 @@ convertToPlotly(plot1, height = 450, width = 2500) %>%
                                
 ## ---- computing_uptake_over_time_cf_sciences_summary --------
 
-focus_subject <- c(default_focus_subject, "biology", "physics", "chemistry")
+focus_subject <- c("computing", "biology", "physics", "chemistry")
 
 plot1 <- filter_focus_subject_group_summaries %>%
-            filter(str_detect(SubjectGroup, regex(paste(focus_subject, collapse = "|"), ignore_case = TRUE))) %>%
+            #filter(str_detect(SubjectGroup, regex(paste(focus_subject, collapse = "|"), ignore_case = TRUE))) %>%
+            filter(SubjectGroup %in% snakecase::to_upper_camel_case(focus_subject)) %>%
             mutate(tooltip = paste(SubjectGroup, "-", formatNumber(AllEntries), "entries in", year)) %>%
 
                            
@@ -937,7 +947,8 @@ for (i in seq_along(qualifications)) {
 
 
     plots_cf_sciences[[i]] <- filter_focus_subjects %>%
-        filter(str_detect(SubjectGroup, regex(paste(focus_subject, collapse = "|"), ignore_case = TRUE))) %>%
+        #filter(str_detect(SubjectGroup, regex(paste(focus_subject, collapse = "|"), ignore_case = TRUE))) %>%
+        filter(SubjectGroup %in% snakecase::to_upper_camel_case(focus_subject)) %>%
         filter(qualification == qualifications[i]) %>%
         mutate(SubjectGroup = droplevels(SubjectGroup),
                SubjectGroup = fct_reorder(SubjectGroup, AllEntries)) %>%
@@ -1050,9 +1061,10 @@ for (i in seq_along(qualifications)) {
                   .keep = TRUE) %>%
             subplot(nrows = 1, margin = 0.0035, shareX = TRUE, shareY = TRUE) %>%
 
-            plotly_build() %>%
-            partial_bundle() %>%
-            toWebGL()
+            plotly_build()  #%>%
+#            partial_bundle(local = FALSE) %>%
+#            #mapToPlotlyBasicCDN() %>%
+#            toWebGL()
 
 
     female_legend <- FALSE
@@ -1060,12 +1072,12 @@ for (i in seq_along(qualifications)) {
 
     for (j in seq_along(plots_cf_sciences[[i]]$x$data)) {
 
-        if (plots_cf_sciences[[i]]$x$data[[j]]$name == gender_column_labels[1]) {
+        if (!female_legend & (plots_cf_sciences[[i]]$x$data[[j]]$name == gender_column_labels[1])) {
 
             plots_cf_sciences[[i]]$x$data[[j]]$showlegend <- TRUE
             female_legend <- !female_legend
 
-        } else if (plots_cf_sciences[[i]]$x$data[[j]]$name == gender_column_labels[2]) {
+        } else if (!male_legend & (plots_cf_sciences[[i]]$x$data[[j]]$name == gender_column_labels[2])) {
 
             plots_cf_sciences[[i]]$x$data[[j]]$showlegend <- TRUE
             male_legend <- !male_legend
