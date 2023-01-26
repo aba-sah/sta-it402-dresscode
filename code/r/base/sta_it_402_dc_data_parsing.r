@@ -35,7 +35,7 @@ select_focus_subjects <- select_focus_subjects %>%
                             suppressWarnings() # already catering for empty subject_filter search
 
 
-focus_subject <- c("art and design", "visual arts", "drama", "dance", "music" #,
+focus_subject <- c("art and design", "drama", "dance", "music" #,
                    #"creative digital media" - all digital media now in its subject group
                   )
 
@@ -46,8 +46,21 @@ select_focus_subjects <- select_focus_subjects %>%
                             bind_rows(createSubjectGroups(sqa_qualifications_data,
                                                           focus_subject,
                                                           subject_filter,
+                                                          TRUE,
                                                           overwrite_subject_group = overwrite_subject_group)) %>%
                             suppressWarnings()
+
+focus_subject <- c("visual arts")
+
+subject_filter <- "digital media"
+overwrite_subject_group <- c("all" = "expressive art")
+
+select_focus_subjects <- select_focus_subjects %>%
+                            bind_rows(createSubjectGroups(sqa_qualifications_data,
+                                                          focus_subject,
+                                                          overwrite_subject_group = overwrite_subject_group)) %>%
+                            suppressWarnings()
+
 
 
 focus_subject <- c("health and food technology", "physical education")
@@ -71,6 +84,9 @@ select_focus_subjects <- select_focus_subjects %>%
                                                           subject_filter,
                                                           TRUE,
                                                           overwrite_subject_group = overwrite_subject_group)) %>%
+                            mutate(across(CommonSubjectLabel, ~ case_when(str_detect(Subject, regex("gaidhlig", ignore_case = TRUE)) ~ "Gaelic",
+                                                                          TRUE ~ .
+                                                                         ))) %>%
                             suppressWarnings()
 
 
@@ -151,8 +167,8 @@ select_focus_subjects <- select_focus_subjects %>%
 select_focus_subjects <- select_focus_subjects %>%
     mutate(across(SubjectGroup, ~ if_else(is.na(.), Subject, .)),
            across(everything(), as.factor),
-           across(SubjectGroup, ~ fct_relevel(., levels(select_focus_subjects$SubjectGroup)[str_detect(levels(select_focus_subjects$SubjectGroup),
-                                                      regex("computing", ignore_case = TRUE))]))
+           across(SubjectGroup, ~ fct_relevel(., sort(unique(select_focus_subjects$SubjectGroup)[str_detect(unique(select_focus_subjects$SubjectGroup),
+                                                      regex("computing", ignore_case = TRUE))])))
            )
 
 
