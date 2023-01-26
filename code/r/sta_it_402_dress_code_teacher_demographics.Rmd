@@ -1,0 +1,224 @@
+---
+title: "STA DressCode - Teacher Demographics"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: rows
+    #vertical_layout: fill
+    theme: bootstrap
+    social: menu
+ #   source_code: embed
+
+---
+
+```{css, echo = FALSE}
+
+  .wide_image {
+    overflow-x:scroll;
+    white-space: nowrap;
+  }
+
+  .wide_image img {
+    max-width: none;
+  }
+
+  .large_image {
+    overflow:scroll;
+    white-space: nowrap;
+  }
+
+  .show_hide_element_box {
+    #color: #fff;
+    /* padding: 20px; */
+    display: none;
+    /* margin-top: 20px; */
+  }
+
+```
+
+
+```{r global-options, include = FALSE, cache = FALSE}
+
+knitr::opts_chunk$set(out.width = '95%', fig.align = 'center',
+                      echo = FALSE, warning = FALSE, message = FALSE)
+
+# fig.dim = c(12, 5), out.height = '100%',
+```
+
+```{r libraries_and_utilities}
+
+#library(tidyverse)
+#library(ggtext)
+#library(DBI)
+
+#library(plotly)
+
+library(knitr)
+library(kableExtra)
+
+# utilities & c.
+
+knitr::read_chunk("base/sta_it_402_dc_interactive.r")
+
+source("base/it-402-dc-data_initial_exploration-base.r")
+source("base/common_interaction.r", local = knitr::knit_global())
+
+# need to reduce font sizes here ...
+dressCodeTheme <- dressCodeTheme +
+        theme(plot.title = element_text(lineheight = 0.8, size = 24, colour = "grey50", face = "bold",
+                                          margin = margin(t = 10, b = 10)),
+              axis.text.y = element_text(size = 14), # element_markdown
+              axis.text.x = element_text(size = 16, angle = 45, vjust = 0.5),
+              axis.title = element_text(size = 20),
+              legend.title = element_text(size = 18), legend.text = element_text(size = 14),
+              strip.text = element_text(size = 18)
+            )
+
+```
+
+```{r data_etl, cache = TRUE}
+
+dbConn <- dbConnect(RSQLite::SQLite(), paste0(path_to_file_store, "/", "sqa-data-db.sqlite"))
+#dbConn
+
+source("base/sta_it_402_dc_data_etl.r", local = knitr::knit_global())
+source("base/teacher_demographics_etl.r", local = knitr::knit_global())
+source("base/sta_it_402_dc_data_parsing.r", local = knitr::knit_global())
+
+```
+
+
+Overview
+=======================================================================
+
+
+Row {data-height=200}
+-----------------------------------------------------------------------
+
+### Teacher Age Ranges &ndash; Total, FTE, across all Local Authorities
+
+```{r, teacher_demographics_age_fte_all_local_authorities, fig.height = 8, fig.width = 14}
+```
+
+Row {data-height=200}
+-----------------------------------------------------------------------
+
+### Teacher Age Ranges &ndash; Median FTE across all Local Authorities
+
+```{r, teacher_demographics_age_median_fte_all_local_authorities, fig.height = 8, fig.width = 14}
+```
+
+
+
+Computing Compared to Selected Subjects I {data-navmenu="Exploring the Data&nbsp;&ndash;&nbsp;Teachers"}
+=======================================================================
+
+Column
+-------------------------------------
+
+### Computing, English, Maths, Sciences (excl. General Science) & Modern Languages
+
+```{r, teacher_demographics_age_fte_computing_cf_english_maths_sciences_modern_languages, fig.height = 8, fig.width = 14}
+```
+
+
+### Computing, Sciences (excl. General Science) & Modern Languages
+
+```{r, teacher_demographics_age_fte_computing_cf_sciences_modern_languages, fig.height = 8, fig.width = 14}
+```
+
+
+Computing Compared to Selected Subjects II {data-navmenu="Exploring the Data&nbsp;&ndash;&nbsp;Teachers"}
+=======================================================================
+
+Column
+-------------------------------------
+
+### Computing, English, Maths, All Sciences (incl. General Science), Modern & Community Languages
+
+```{r, teacher_demographics_age_fte_computing_cf_english_maths_all_sciences_modern_languages, fig.height = 8, fig.width = 14}
+```
+
+
+### Computing, All Sciences (incl. General Science), Modern & Community Languages
+
+```{r, teacher_demographics_age_fte_computing_cf_all_sciences_modern_languages, fig.height = 8, fig.width = 14}
+```
+
+
+
+Computing Compared to Selected Subjects III {data-navmenu="Exploring the Data&nbsp;&ndash;&nbsp;Teachers"}
+=======================================================================
+
+Column
+-------------------------------------
+
+### Computing compared to Sciences
+
+```{r, teacher_demographics_age_fte_computing_cf_sciences, fig.height = 8, fig.width = 14, out.width = '65%'}
+```
+
+
+### Computing compared to Modern Languages
+
+```{r, teacher_demographics_age_fte_computing_cf_modern_languages, fig.height = 8, fig.width = 14}
+```
+
+
+
+Age Distribution {data-navmenu="Exploring the Data&nbsp;&ndash;&nbsp;Teachers"}
+=======================================================================
+
+Row {.tabset .tabset-fade}
+-----------------------------------------------------------------------
+
+### Teacher FTE Change 2011-2021 &ndash; Computing compared to Sciences
+
+```{r, teacher_demographics_age_over_time_computing_vs_sciences, fig.height = 7, fig.width = 14}
+```
+
+
+### Teacher FTE Change 2011-2021 &ndash; Computing compared to Modern Languages
+
+```{r, teacher_demographics_age_over_time_computing_vs_modern_languages, fig.height = 7, fig.width = 14}
+```
+
+
+
+Distribution over Time {data-navmenu="Exploring the Data&nbsp;&ndash;&nbsp;Teachers"}
+=======================================================================
+
+Row {.tabset .tabset-fade}
+-----------------------------------------------------------------------
+
+### Teacher FTE Change 2011-2021, by Age Range &ndash; Computing compared to Sciences
+
+```{r, teacher_demographics_age_change_over_time_computing_vs_sciences, fig.height = 7, fig.width = 14}
+```
+
+
+### Teacher FTE Change 2011-2021, by Age Range &ndash; Computing compared to Modern Languages
+
+```{r, teacher_demographics_age_change_over_time_computing_vs_modern_languages, fig.height = 7, fig.width = 14}
+```
+
+
+About
+=======================================================================
+
+
+```{=html}
+<p>&nbsp;<br />
+
+<a href = "https://www.gov.scot/publications/teacher-census-supplementary-statistics" target = "_blank"> Teacher census data</a> was obtained from the Scottish Govt Open Data Portal.
+
+
+```
+
+
+```{r}
+# cleanup ...
+
+dbDisconnect(dbConn)
+#dbConn
+
+```
