@@ -3,7 +3,7 @@ title: "STA DressCode - Teacher Demographics"
 output: 
   flexdashboard::flex_dashboard:
     orientation: rows
-    #vertical_layout: fill
+    vertical_layout: fill
     theme: bootstrap
     social: menu
  #   source_code: embed
@@ -19,6 +19,16 @@ output:
 
   .wide_image img {
     max-width: none;
+  }
+
+
+  .medium_image {
+    overflow-x:scroll;
+    white-space: nowrap;
+  }
+
+  .medium_image img {
+    max-width: 600px;
   }
 
   .large_image {
@@ -90,26 +100,66 @@ source("base/sta_it_402_dc_data_parsing.r", local = knitr::knit_global())
 Overview
 =======================================================================
 
+### Change in Teacher Age over Time, Publicly Funded Schools in Scotland
 
-Row {data-height=200}
------------------------------------------------------------------------
+```{r, teacher_demographics_head_count_teacher_age, fig.height = 5.8, fig.width = 18}
+```
 
-### Teacher Age Ranges &ndash; Total, FTE, across all Local Authorities
+
+Teacher FTE {data-navmenu="Change in Age Distribution"}
+=======================================================================
+
+Row {.tabset .tabset-fade}
+-------------------------------------
+
+### Teacher Age Ranges
+
+<div class="medium_image">
 
 ```{r, teacher_demographics_age_fte_all_local_authorities, fig.height = 8, fig.width = 14}
 ```
 
-Row {data-height=200}
------------------------------------------------------------------------
-
-### Teacher Age Ranges &ndash; Median FTE across all Local Authorities
-
 ```{r, teacher_demographics_age_median_fte_all_local_authorities, fig.height = 8, fig.width = 14}
+```
+
+</div>
+
+
+### Teacher Age over Time
+
+<div class="medium_image">
+
+```{r, teacher_demographics_age_over_time_total_fte_all_local_authorities, fig.height = 8, fig.width = 14}
+```
+
+```{r, teacher_demographics_age_over_time_median_fte_all_local_authorities, fig.height = 8, fig.width = 14}
+```
+
+</div>
+
+
+
+Teacher Headcount {data-navmenu="Change in Age Distribution"}
+=======================================================================
+
+Column
+-------------------------------------
+
+
+### Summary &ndash; Teacher Age over Time
+
+```{r, teacher_demographics_head_count_teacher_age_statistics, fig.height = 8, fig.width = 14}
+```
+
+
+### Typical Teacher Age over Time
+
+```{r, teacher_demographics_head_count_teacher_age_central_values, fig.height = 8, fig.width = 14}
 ```
 
 
 
-Computing Compared to Selected Subjects I {data-navmenu="Exploring the Data&nbsp;&ndash;&nbsp;Teachers"}
+Computing Compared to Selected Subjects I {data-navmenu="FTE&nbsp;&ndash;&nbsp;Subject Comparison"}
 =======================================================================
 
 Column
@@ -127,7 +177,7 @@ Column
 ```
 
 
-Computing Compared to Selected Subjects II {data-navmenu="Exploring the Data&nbsp;&ndash;&nbsp;Teachers"}
+Computing Compared to Selected Subjects II {data-navmenu="FTE&nbsp;&ndash;&nbsp;Subject Comparison"}
 =======================================================================
 
 Column
@@ -146,7 +196,7 @@ Column
 
 
 
-Computing Compared to Selected Subjects III {data-navmenu="Exploring the Data&nbsp;&ndash;&nbsp;Teachers"}
+Computing Compared to Selected Subjects III {data-navmenu="FTE&nbsp;&ndash;&nbsp;Subject Comparison"}
 =======================================================================
 
 Column
@@ -165,7 +215,7 @@ Column
 
 
 
-Age Distribution {data-navmenu="Exploring the Data&nbsp;&ndash;&nbsp;Teachers"}
+Age Distribution {data-navmenu="FTE&nbsp;&ndash;&nbsp;Subject Comparison"}
 =======================================================================
 
 Row {.tabset .tabset-fade}
@@ -184,7 +234,7 @@ Row {.tabset .tabset-fade}
 
 
 
-Distribution over Time {data-navmenu="Exploring the Data&nbsp;&ndash;&nbsp;Teachers"}
+Age Distribution over Time {data-navmenu="FTE&nbsp;&ndash;&nbsp;Subject Comparison"}
 =======================================================================
 
 Row {.tabset .tabset-fade}
