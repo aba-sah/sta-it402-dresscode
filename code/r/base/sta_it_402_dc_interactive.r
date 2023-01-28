@@ -1092,28 +1092,163 @@ for (i in seq_along(qualifications)) {
 rm(female_legend, male_legend)
 
                            
-## ---- teacher_demographics_age_median_fte_all_local_authorities --------
+        
+## ---- teacher_demographics_head_count_teacher_age --------                                           
+                           
+distribution_teacher_age %>%
 
-options(repr.plot.width = 10, repr.plot.height = 4.5)
+    ggplot(aes(Age, HeadCount, colour = fct_rev(Year), group = Year)) + #, shape = Year)) +
+        #geom_point(size = 1.15) +
+        geom_line() + 
+        labs(y = "Teacher HeadCount",
+             caption = "Note: Data on teacher age over 70 is only provided from 2018.",
+             alt = "Change in Teacher Age over Time, Publicly Funded Schools in Scotland"
+            ) +
+        dressCodeTheme +
+        #scale_colour_manual(values = colorRampPalette(brewer.pal(7, "Dark2"))(length(levels(distribution_teacher_age$Year)))) +        
+        scale_shape_manual(values = seq(6, 14)) +
 
+
+        theme(legend.title = element_blank(), 
+              legend.margin = margin(0),
+              axis.text.x = element_text(size = 12, angle = 45, vjust = 0.5),
+              plot.caption = element_text(size = 12),              
+              ) 
+                           
+        
+                           
+## ---- teacher_demographics_head_count_teacher_age_statistics --------                                           
+
+distribution_teacher_age  %>%
+
+    mutate(across(Age, ~ as.integer(as.character(.))),
+           MinimumAge = min(Age, na.rm = TRUE),
+           MaximumAge = max(Age, na.rm = TRUE),
+          ) %>%
+    distinct(Year, across(matches("\\w+Age$")), PercentOver55) %>%
+    pivot_longer(matches("Age$"), names_to = "Metric", values_to = "Age") %>%
+    mutate(across(Metric, ~ gsub("Age", "", .))) %>%
+
+    ggplot(aes(Year, Age, colour = Metric, group = Metric)) + 
+        geom_line(aes(lty = Metric), size = 1.05) + 
+        ylab("Age") + 
+        xlab("") + 
+        dressCodeTheme +
+        scale_shape_manual(values = seq(6, 14)) +
+        scale_linetype_manual("Teacher Age", 
+                                values = c("Average" = 4, "Median" = 2, "Minimum" = 3, "Maximum" = 3),
+                                labels = c("Average", "Median", "Minimum", "Maximum")) +
+        scale_colour_manual("Teacher Age", 
+                                values = c("Average" = "blue", "Median" = "red", "Minimum" = "cyan", "Maximum" = "cyan"),
+                                labels = c("Average", "Median", "Minimum", "Maximum")) +
+
+
+        theme(legend.position = "bottom", 
+              legend.title = element_blank(), 
+              legend.margin = margin(0),
+              legend.text = element_text(size = 18),
+              axis.text.y = element_text(size = 16), 
+              ) 
+
+                          
+                           
+## ---- teacher_demographics_head_count_teacher_age_central_values --------                                           
+
+distribution_teacher_age  %>%
+
+    distinct(Year, across(matches("\\w+Age$")), PercentOver55) %>%
+    pivot_longer(matches("Age$"), names_to = "Metric", values_to = "Age") %>%
+    mutate(across(Metric, ~ gsub("Age", "", .))) %>%
+
+    ggplot(aes(Year, Age, colour = Metric, group = Metric)) + 
+        geom_line(aes(lty = Metric), size = 1.05) + 
+        ylab("Age") + 
+        xlab("") + 
+        dressCodeTheme +
+        scale_shape_manual(values = seq(6, 14)) +
+        scale_linetype_manual("Teacher Age", 
+                                values = c("Average" = 4, "Median" = 2),
+                                labels = c("Average", "Median")) +
+        scale_colour_manual("Teacher Age", 
+                                values = c("Average" = "blue", "Median" = "red"),
+                                labels = c("Average", "Median")) +
+
+
+        theme(legend.position = "bottom", 
+              legend.title = element_blank(), 
+              legend.margin = margin(0),
+              legend.text = element_text(size = 18),
+              axis.text.y = element_text(size = 16), 
+              
+              ) 
+
+                             
+                           
+## ---- teacher_demographics_age_over_time_median_fte_all_local_authorities --------                            
+                           
 teacher_fte_local_authority_by_age %>%
-    filter((Age != "Average") & (LocalAuthority != "All local authorities")) %>%
-    group_by(Year, Age) %>%
+
+    filter((AgeRange != "Average") & (LocalAuthority != "All local authorities")) %>%
+    group_by(AgeRange, Year) %>%
     summarise(across(TeacherFTE, list(median = median, average = mean), na.rm = TRUE)) %>%
     ungroup() %>%
-    #mutate(across(Year, ~ fct_explicit_na(., "All LocalAuthorities"))) %>%
+
+    ggplot(aes(Year, TeacherFTE_median, colour = AgeRange, group = AgeRange, shape = AgeRange)) +
+        geom_point(size = 0.95) +
+        geom_line() + 
+        ylab("Median FTE - All Local Authorities") + 
+        xlab("") + 
+        dressCodeTheme +
+        scale_colour_brewer(palette = "Dark2", direction =  -1) + 
+        scale_shape_manual(values = seq(6, 14)) +
+
+
+        theme(#legend.position = "bottom", 
+              legend.title = element_blank(), 
+              legend.margin = margin(0)
+              ) 
+
+
+                           
+## ---- teacher_demographics_age_over_time_total_fte_all_local_authorities--------                            
+
+teacher_fte_local_authority_by_age %>%
+
+    filter((AgeRange != "Average") & (LocalAuthority == "All local authorities")) %>%
+
+    ggplot(aes(Year, TeacherFTE, colour = AgeRange, group = AgeRange, shape = AgeRange)) +
+        geom_point(size = 1.15) +
+        geom_line() + 
+        ylab("Total FTE - All Local Authorities") + 
+        xlab("") + 
+        dressCodeTheme +
+        scale_colour_brewer(palette = "Dark2", direction =  -1) + 
+        scale_shape_manual(values = seq(6, 14)) +
+
+
+        theme(legend.title = element_blank(), 
+              legend.margin = margin(0),
+              axis.text.x = element_text(size = 14, angle = 45, vjust = 0.5),
+              ) 
+                           
+                           
+                           
+## ---- teacher_demographics_age_median_fte_all_local_authorities --------
+
+teacher_fte_local_authority_by_age %>%
+    filter((AgeRange != "Average") & (LocalAuthority != "All local authorities")) %>%
+    group_by(Year, AgeRange) %>%
+    summarise(across(TeacherFTE, list(median = median, average = mean), na.rm = TRUE)) %>%
+    ungroup() %>%
     
-    ggplot(aes(Age, TeacherFTE_median, colour = Year, group = Year)) +
+    ggplot(aes(AgeRange, TeacherFTE_median, colour = Year, group = Year)) +
         #geom_point(size = 0.5, show.legend = FALSE) +
         geom_line() + 
         ylab("Median FTE - All Local Authorities") + xlab("") + 
         dressCodeTheme +
-        #scale_colour_brewer("Year", palette = "Dark2") + #, direction = -1) +
-        scale_colour_romaO(discrete = TRUE) +
-        #scale_fill_tofino(discrete = TRUE, reverse = TRUE) +
-
-        theme(#legend.position = "bottom", 
-              legend.title = element_blank(), 
+        #scale_colour_romaO(discrete = TRUE) +
+        
+        theme(legend.title = element_blank(), 
               legend.margin = margin(0)
               ) 
 
@@ -1122,20 +1257,16 @@ teacher_fte_local_authority_by_age %>%
 ## ---- teacher_demographics_age_fte_all_local_authorities --------
 
 teacher_fte_local_authority_by_age %>%
-    filter((Age != "Average") & (LocalAuthority == "All local authorities")) %>%
-    #mutate(across(Year, ~ fct_explicit_na(., "All LocalAuthorities"))) %>%
+    filter((AgeRange != "Average") & (LocalAuthority == "All local authorities")) %>%
     
-    ggplot(aes(Age, TeacherFTE, colour = Year, group = Year)) +
+    ggplot(aes(AgeRange, TeacherFTE, colour = Year, group = Year)) +
         #geom_point(size = 0.5, show.legend = FALSE) +
         geom_line() + 
         ylab("Total FTE - All Local Authorities") + xlab("") + 
         dressCodeTheme +
-        #scale_colour_brewer("Year", palette = "Dark2") + #, direction = -1) +
-        scale_colour_romaO(discrete = TRUE) +
-        #scale_fill_tofino(discrete = TRUE, reverse = TRUE) +
-
-        theme(#legend.position = "bottom", 
-              legend.title = element_blank(), 
+        #scale_colour_romaO(discrete = TRUE) +
+        
+        theme(legend.title = element_blank(), 
               legend.margin = margin(0)
               ) 
 
@@ -1144,16 +1275,16 @@ teacher_fte_local_authority_by_age %>%
 ## ---- teacher_demographics_age_fte_computing_cf_english_maths_sciences_modern_languages --------
 
 teacher_fte_main_subject_by_age %>%
-    filter(Age != "Average") %>%
-    group_by(Age) %>%
+    filter(AgeRange != "Average") %>%
+    group_by(AgeRange) %>%
     summarise(across(TeacherFTE, list(median = median, average = mean), na.rm = TRUE)) %>%
 
     bind_rows(teacher_fte_main_subject_by_age %>%
-                filter(Age != "Average") %>%
+                filter(AgeRange != "Average") %>%
                 filter((SubjectGroup %in% c("Computing", "Sciences", "ModernLanguages", "English", "Maths")) & 
                        !(Subject %in% c("General Science", "Science (General)", "Community Languages", "Other Modern Languages"))) %>%
 
-                group_by(Age, SubjectGroup) %>%
+                group_by(AgeRange, SubjectGroup) %>%
                 summarise(across(TeacherFTE, list(median = median, average = mean), na.rm = TRUE))
     ) %>%
     mutate(across(SubjectGroup, ~ fct_recode(., "Sciences (excl. General)" = "Sciences")),
@@ -1162,13 +1293,13 @@ teacher_fte_main_subject_by_age %>%
            across(SubjectGroup, ~ fct_relevel(., "ModernLanguages", "English", "Maths", after = Inf)),
           ) %>%
     
-    ggplot(aes(Age, TeacherFTE_median, colour = SubjectGroup, group = SubjectGroup, shape = SubjectGroup)) +
-        geom_point(size = 1.05, show.legend = FALSE) +
+    ggplot(aes(AgeRange, TeacherFTE_median, colour = SubjectGroup, group = SubjectGroup, shape = SubjectGroup)) +
+        geom_point(size = 0.95) +
         geom_line() + 
         ggtitle("Computing cf. English, Maths, Sciences & Modern Languages") + 
         ylab("Median FTE") + xlab("") + 
         dressCodeTheme +
-        scale_colour_brewer("subject", palette = "Dark2") + #, direction = -1) +
+        scale_colour_brewer(palette = "Dark2") + #, direction = -1) +
         theme(legend.position = "bottom", 
               legend.title = element_blank(), 
               legend.margin = margin(0)
@@ -1179,15 +1310,15 @@ teacher_fte_main_subject_by_age %>%
 ## ---- teacher_demographics_age_fte_computing_cf_sciences_modern_languages --------
 
 teacher_fte_main_subject_by_age %>%
-    filter(Age != "Average") %>%
-    group_by(Age) %>%
+    filter(AgeRange != "Average") %>%
+    group_by(AgeRange) %>%
     summarise(across(TeacherFTE, list(median = median, average = mean), na.rm = TRUE)) %>%
 
     bind_rows(teacher_fte_main_subject_by_age %>%
-                filter(Age != "Average") %>%
+                filter(AgeRange != "Average") %>%
                 filter((SubjectGroup %in% c("Computing", "Sciences", "ModernLanguages")) & 
                        !(Subject %in% c("General Science", "Science (General)", "Community Languages", "Other Modern Languages"))) %>%
-                group_by(Age, SubjectGroup) %>%
+                group_by(AgeRange, SubjectGroup) %>%
                 summarise(across(TeacherFTE, list(median = median, average = mean), na.rm = TRUE))
     ) %>%
     mutate(across(SubjectGroup, ~ fct_recode(., "Sciences (excl. General)" = "Sciences")),
@@ -1196,13 +1327,13 @@ teacher_fte_main_subject_by_age %>%
            across(SubjectGroup, ~ fct_relevel(., "ModernLanguages", after = Inf)),
           ) %>%
     
-    ggplot(aes(Age, TeacherFTE_median, colour = SubjectGroup, group = SubjectGroup, shape = SubjectGroup)) +
-        geom_point(size = 1.05, show.legend = FALSE) +
+    ggplot(aes(AgeRange, TeacherFTE_median, colour = SubjectGroup, group = SubjectGroup, shape = SubjectGroup)) +
+        geom_point(size = 0.95) +
         geom_line() + 
         ggtitle("Computing cf. Sciences & Modern Languages") + 
         ylab("Median FTE") + xlab("") + 
         dressCodeTheme +
-        scale_colour_brewer("subject", palette = "Dark2") + #, direction = -1) +
+        scale_colour_brewer(palette = "Dark2") + #, direction = -1) +
         theme(legend.position = "bottom", 
               legend.title = element_blank(), 
               legend.margin = margin(0)
@@ -1213,14 +1344,14 @@ teacher_fte_main_subject_by_age %>%
 ## ---- teacher_demographics_age_fte_computing_cf_all_sciences_modern_languages --------
 
 teacher_fte_main_subject_by_age %>%
-    filter(Age != "Average") %>%
-    group_by(Age) %>%
+    filter(AgeRange != "Average") %>%
+    group_by(AgeRange) %>%
     summarise(across(TeacherFTE, list(median = median, average = mean), na.rm = TRUE)) %>%
 
     bind_rows(teacher_fte_main_subject_by_age %>%
-                filter(Age != "Average") %>%
+                filter(AgeRange != "Average") %>%
                 filter(SubjectGroup %in% c("Computing", "Sciences", "ModernLanguages")) %>%
-                group_by(Age, SubjectGroup) %>%
+                group_by(AgeRange, SubjectGroup) %>%
                 summarise(across(TeacherFTE, list(median = median, average = mean), na.rm = TRUE))
     ) %>%
     mutate(across(SubjectGroup, ~ fct_explicit_na(., "All Subjects")),
@@ -1230,13 +1361,13 @@ teacher_fte_main_subject_by_age %>%
            across(SubjectGroup, ~ fct_recode(., "Modern & Community Languages" = "ModernLanguages")), 
           ) %>%
     
-    ggplot(aes(Age, TeacherFTE_median, colour = SubjectGroup, group = SubjectGroup, shape = SubjectGroup)) +
-        geom_point(size = 1.05, show.legend = FALSE) +
+    ggplot(aes(AgeRange, TeacherFTE_median, colour = SubjectGroup, group = SubjectGroup, shape = SubjectGroup)) +
+        geom_point(size = 0.95) +
         geom_line() + 
         ggtitle("Computing cf. Sciences, Modern & Community Languages") + 
         ylab("Median FTE") + xlab("") + 
         dressCodeTheme +
-        scale_colour_brewer("subject", palette = "Dark2") + #, direction = -1) +
+        scale_colour_brewer(palette = "Dark2") + #, direction = -1) +
         theme(legend.position = "bottom", 
               legend.title = element_blank(), 
               legend.margin = margin(0)
@@ -1247,15 +1378,15 @@ teacher_fte_main_subject_by_age %>%
 ## ---- teacher_demographics_age_fte_computing_cf_english_maths_all_sciences_modern_languages --------
 
 teacher_fte_main_subject_by_age %>%
-    filter(Age != "Average") %>%
-    group_by(Age) %>%
+    filter(AgeRange != "Average") %>%
+    group_by(AgeRange) %>%
     summarise(across(TeacherFTE, list(median = median, average = mean), na.rm = TRUE)) %>%
 
     bind_rows(teacher_fte_main_subject_by_age %>%
-                filter(Age != "Average") %>%
+                filter(AgeRange != "Average") %>%
                 filter(SubjectGroup %in% c("Computing", "Sciences", "ModernLanguages", "English", "Maths")) %>%
 
-                group_by(Age, SubjectGroup) %>%
+                group_by(AgeRange, SubjectGroup) %>%
                 summarise(across(TeacherFTE, list(median = median, average = mean), na.rm = TRUE))
     ) %>%
     mutate(across(SubjectGroup, ~ fct_explicit_na(., "All Subjects")),
@@ -1265,13 +1396,13 @@ teacher_fte_main_subject_by_age %>%
            across(SubjectGroup, ~ fct_recode(., "Modern & Community Languages" = "ModernLanguages")),          
           ) %>%
     
-    ggplot(aes(Age, TeacherFTE_median, colour = SubjectGroup, group = SubjectGroup, shape = SubjectGroup)) +
-        geom_point(size = 1.05, show.legend = FALSE) +
+    ggplot(aes(AgeRange, TeacherFTE_median, colour = SubjectGroup, group = SubjectGroup, shape = SubjectGroup)) +
+        geom_point(size = 0.95) +
         geom_line() + 
         ggtitle("Computing cf. English, Maths, Sciences, Modern & Community Languages") + 
         ylab("Median FTE") + xlab("") + 
         dressCodeTheme +
-        scale_colour_brewer("subject", palette = "Dark2") + #, direction = -1) +
+        scale_colour_brewer(palette = "Dark2") + #, direction = -1) +
         theme(legend.position = "bottom", 
               legend.title = element_blank(), 
               legend.margin = margin(0)
@@ -1282,29 +1413,29 @@ teacher_fte_main_subject_by_age %>%
 ## ---- teacher_demographics_age_fte_computing_cf_sciences --------
 
 teacher_fte_main_subject_by_age %>%
-    filter(Age != "Average") %>%
-    group_by(Age) %>%
+    filter(AgeRange != "Average") %>%
+    group_by(AgeRange) %>%
     summarise(across(TeacherFTE, list(median = median, average = mean), na.rm = TRUE)) %>%
 
     bind_rows(teacher_fte_main_subject_by_age %>%
-                filter(Age != "Average") %>%
+                filter(AgeRange != "Average") %>%
                 filter((SubjectGroup  == "Computing") | 
                        (Subject %in% c("Biology", "Chemistry", "Physics"))) %>%
-                group_by(Age, Subject) %>%
+                group_by(AgeRange, Subject) %>%
                 summarise(across(TeacherFTE, list(median = median, average = mean), na.rm = TRUE))
     ) %>%
     mutate(across(Subject, ~ fct_explicit_na(., "All Subjects")),
            across(Subject, ~ fct_relevel(., "All Subjects")),
           ) %>%
-    arrange(Age, Subject) %>%
+    arrange(AgeRange, Subject) %>%
     
-    ggplot(aes(Age, TeacherFTE_median, colour = Subject, group = Subject, shape = Subject)) +
-        geom_point(size = 1.05, show.legend = FALSE) +
+    ggplot(aes(AgeRange, TeacherFTE_median, colour = Subject, group = Subject, shape = Subject)) +
+        geom_point(size = 0.95) +
         geom_line() + 
         ggtitle("Median Teacher FTE - Computing cf. Sciences") + 
         ylab("Median FTE") + xlab("") + 
         dressCodeTheme +
-        scale_colour_brewer("subject", palette = "Dark2") + #, direction = -1) +
+        scale_colour_brewer(palette = "Dark2") + #, direction = -1) +
         theme(legend.position = "bottom", 
               legend.title = element_blank(), 
               legend.margin = margin(0)
@@ -1315,8 +1446,8 @@ teacher_fte_main_subject_by_age %>%
 ## ---- teacher_demographics_age_fte_computing_cf_modern_languages --------
 
 teacher_fte_main_subject_by_age %>%
-    filter(Age != "Average") %>%
-    group_by(Age) %>%
+    filter(AgeRange != "Average") %>%
+    group_by(AgeRange) %>%
     summarise(across(TeacherFTE, list(median = median, average = mean), na.rm = TRUE)) %>%
 
     bind_rows(teacher_fte_main_subject_by_age %>%
@@ -1327,57 +1458,57 @@ teacher_fte_main_subject_by_age %>%
                        across(CommonSubjectLabel, as.factor)
                       ) %>%
                 
-                filter(Age != "Average") %>%
+                filter(AgeRange != "Average") %>%
                 filter((SubjectGroup  == "Computing") | 
                        (CommonSubjectLabel %in% c("Gaelic", "French", "German", "Spanish", "Italian"))) %>%
-                group_by(Age, Subject) %>%
+                group_by(AgeRange, Subject) %>%
                 summarise(across(TeacherFTE, list(median = median, average = mean), na.rm = TRUE))
     ) %>%
     mutate(across(Subject, ~ fct_explicit_na(., "All Subjects")),
            across(Subject, ~ fct_relevel(., "All Subjects")),
           ) %>%
-    arrange(Age, Subject) %>%
+    arrange(AgeRange, Subject) %>%
     
-    ggplot(aes(Age, TeacherFTE_median, colour = Subject, group = Subject, shape = Subject)) +
-        geom_point(size = 1.05, show.legend = FALSE) +
+    ggplot(aes(AgeRange, TeacherFTE_median, colour = Subject, group = Subject, shape = Subject)) +
+        geom_point(size = 0.95) +
         geom_line() + 
         ggtitle("Median Teacher FTE - Computing cf. Modern Languages") + 
         ylab("Median FTE") + xlab("") + 
         dressCodeTheme +
-        scale_colour_brewer("subject", palette = "Dark2") + #, direction = -1) +
+        scale_colour_brewer(palette = "Dark2") + #, direction = -1) +
         theme(legend.position = "bottom", 
               legend.title = element_blank(), 
               legend.margin = margin(0)
               )
 
-        
+
                            
 ## ---- teacher_demographics_age_over_time_computing_vs_sciences --------
 
 
 teacher_fte_main_subject_by_age %>%
-    filter(Age != "Average") %>%
-    group_by(Year, Age) %>%
+    filter(AgeRange != "Average") %>%
+    group_by(Year, AgeRange) %>%
     summarise(across(TeacherFTE, median, na.rm = TRUE)) %>%
 
     bind_rows(teacher_fte_main_subject_by_age %>%
-                filter(Age != "Average") %>%
+                filter(AgeRange != "Average") %>%
                 filter((SubjectGroup  == "Computing") | 
                        (CommonSubjectLabel %in% c("Biology", "Chemistry", "Physics"))) %>%
-                select(Year, Age, Subject, TeacherFTE)
+                select(Year, AgeRange, Subject, TeacherFTE)
     ) %>%
 
     mutate(across(Subject, ~ fct_explicit_na(., "Median - All Subjects")),
            across(Subject, ~ fct_relevel(., "Median - All Subjects")),
           ) %>%
      
-    ggplot(aes(Age, TeacherFTE, colour = Subject, group = Subject, shape = Subject)) +
-        geom_point(size = 1.05, show.legend = FALSE) +
+    ggplot(aes(AgeRange, TeacherFTE, colour = Subject, group = Subject, shape = Subject)) +
+        geom_point(size = 0.95) +
         geom_line() + 
         ggtitle("Teacher FTE Change 2011-2021 - Computing cf. Sciences") + 
         ylab("Median FTE") + xlab("") + 
         dressCodeTheme +
-        scale_colour_brewer("subject", palette = "Dark2") + #, direction = -1) +
+        scale_colour_brewer(palette = "Dark2") + #, direction = -1) +
         theme(legend.position = "bottom", 
               legend.title = element_blank(), 
               legend.margin = margin(0),
@@ -1391,8 +1522,8 @@ teacher_fte_main_subject_by_age %>%
 ## ---- teacher_demographics_age_over_time_computing_vs_modern_languages --------
 
 teacher_fte_main_subject_by_age %>%
-    filter(Age != "Average") %>%
-    group_by(Year, Age) %>%
+    filter(AgeRange != "Average") %>%
+    group_by(Year, AgeRange) %>%
     summarise(across(TeacherFTE, median, na.rm = TRUE)) %>%
 
     bind_rows(teacher_fte_main_subject_by_age %>%
@@ -1403,23 +1534,23 @@ teacher_fte_main_subject_by_age %>%
                        across(CommonSubjectLabel, as.factor)
                       ) %>%
                 
-                filter(Age != "Average") %>%
+                filter(AgeRange != "Average") %>%
                 filter((SubjectGroup  == "Computing") | 
                        (CommonSubjectLabel %in% c("Gaelic", "French", "German", "Spanish", "Italian"))) %>%
-                select(Year, Age, Subject, TeacherFTE)
+                select(Year, AgeRange, Subject, TeacherFTE)
     ) %>%
 
     mutate(across(Subject, ~ fct_explicit_na(., "Median - All Subjects")),
            across(Subject, ~ fct_relevel(., "Median - All Subjects")),
           ) %>%
     
-    ggplot(aes(Age, TeacherFTE, colour = Subject, group = Subject, shape = Subject)) +
-        geom_point(size = 1.05, show.legend = FALSE) +
+    ggplot(aes(AgeRange, TeacherFTE, colour = Subject, group = Subject, shape = Subject)) +
+        geom_point(size = 0.95) +
         geom_line() + 
         ggtitle("Teacher FTE Change 2011-2021 - Computing cf. Modern Languages") + 
         ylab("Median FTE") + xlab("") + 
         dressCodeTheme +
-        scale_colour_brewer("subject", palette = "Dark2") + #, direction = -1) +
+        scale_colour_brewer(palette = "Dark2") + #, direction = -1) +
         scale_shape_manual(values = 0:6) +
         theme(legend.position = "bottom", 
               legend.title = element_blank(), 
@@ -1435,29 +1566,29 @@ teacher_fte_main_subject_by_age %>%
 ## ---- teacher_demographics_age_change_over_time_computing_vs_sciences --------
 
 teacher_fte_main_subject_by_age %>%
-    filter(Age != "Average") %>%
-    group_by(Age, Year) %>%
+    filter(AgeRange != "Average") %>%
+    group_by(AgeRange, Year) %>%
     summarise(across(TeacherFTE, median, na.rm = TRUE)) %>%
 
     bind_rows(teacher_fte_main_subject_by_age %>%
-                filter(Age != "Average") %>%
+                filter(AgeRange != "Average") %>%
                 filter((SubjectGroup  == "Computing") | 
                        (CommonSubjectLabel %in% c("Biology", "Chemistry", "Physics"))) %>%
-                select(Year, Age, Subject, TeacherFTE)
+                select(Year, AgeRange, Subject, TeacherFTE)
     ) %>%
 
     mutate(across(Subject, ~ fct_explicit_na(., "Median - All Subjects")),
            across(Subject, ~ fct_relevel(., "Median - All Subjects")),
           ) %>%
-    #arrange(Year, Age, Subject) %>%
+    #arrange(Year, AgeRange, Subject) %>%
     
     ggplot(aes(Year, TeacherFTE, colour = Subject, group = Subject, shape = Subject)) +
-        geom_point(size = 1.05, show.legend = FALSE) +
+        geom_point(size = 0.95) +
         geom_line() + 
         ggtitle("Teacher FTE Change 2011-2021 - Computing cf. Sciences") + 
         ylab("Median FTE") + xlab("") + 
         dressCodeTheme +
-        scale_colour_brewer("subject", palette = "Dark2") + #, direction = -1) +
+        scale_colour_brewer(palette = "Dark2") + #, direction = -1) +
         theme(legend.position = "bottom", 
               legend.title = element_blank(), 
               legend.margin = margin(0),
@@ -1465,15 +1596,15 @@ teacher_fte_main_subject_by_age %>%
               axis.text.y = element_text(size = 14), # element_markdown
               axis.text.x = element_text(size = 11, angle = 45, vjust = 0.5),
               ) +
-        facet_wrap(~ Age, nrow = 2)
+        facet_wrap(~ AgeRange, nrow = 2)
 
 
                           
 ## ---- teacher_demographics_age_change_over_time_computing_vs_modern_languages --------
 
 teacher_fte_main_subject_by_age %>%
-    filter(Age != "Average") %>%
-    group_by(Age, Year) %>%
+    filter(AgeRange != "Average") %>%
+    group_by(AgeRange, Year) %>%
     summarise(across(TeacherFTE, median, na.rm = TRUE)) %>%
 
     bind_rows(teacher_fte_main_subject_by_age %>%
@@ -1484,24 +1615,24 @@ teacher_fte_main_subject_by_age %>%
                        across(CommonSubjectLabel, as.factor)
                       ) %>%
                 
-                filter(Age != "Average") %>%
+                filter(AgeRange != "Average") %>%
                 filter((SubjectGroup  == "Computing") | 
                        (CommonSubjectLabel %in% c("Gaelic", "French", "German", "Spanish", "Italian"))) %>%
-                select(Year, Age, Subject, TeacherFTE)
+                select(Year, AgeRange, Subject, TeacherFTE)
     ) %>%
 
     mutate(across(Subject, ~ fct_explicit_na(., "Median - All Subjects")),
            across(Subject, ~ fct_relevel(., "Median - All Subjects")),
           ) %>%
-    #arrange(Year, Age, Subject) %>%
+    #arrange(Year, AgeRange, Subject) %>%
     
     ggplot(aes(Year, TeacherFTE, colour = Subject, group = Subject, shape = Subject)) +
-        geom_point(size = 1.05, show.legend = FALSE) +
+        geom_point(size = 0.95) +
         geom_line() + 
         ggtitle("Teacher FTE Change 2011-2021 - Computing cf. Modern Languages") + 
         ylab("Median FTE") + xlab("") + 
         dressCodeTheme +
-        scale_colour_brewer("subject", palette = "Dark2") + #, direction = -1) +
+        scale_colour_brewer(palette = "Dark2") + #, direction = -1) +
         scale_shape_manual(values = 0:6) +
         theme(legend.position = "bottom", 
               legend.title = element_blank(), 
@@ -1509,7 +1640,7 @@ teacher_fte_main_subject_by_age %>%
               axis.text.y = element_text(size = 14), # element_markdown
               axis.text.x = element_text(size = 11, angle = 45, vjust = 0.5),
               ) +
-        facet_wrap(~ Age, nrow = 2)
+        facet_wrap(~ AgeRange, nrow = 2)
 
 
 

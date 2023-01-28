@@ -56,7 +56,7 @@ sqa_qualifications_data <- bind_rows(dbGetQuery(dbConn, paste("SELECT A.*, B.NoO
 ##
 sqa_qualifications_ordering <- sqa_qualifications_data %>%
     distinct(qualification) %>%
-    mutate_at(vars(qualification), as.character) %>%
+    mutate(across(qualification, as.character)) %>%
 
     mutate(qualification_label = if_else(qualification == toupper(qualification),
                                          qualification,
@@ -65,7 +65,7 @@ sqa_qualifications_ordering <- sqa_qualifications_data %>%
     left_join(sqa_qualification_list %>%
 
                 select(QualificationId, SCQFLevel, DataStartYear) %>%
-                mutate_at(vars(SCQFLevel, DataStartYear), as.integer),
+                mutate(across(c(SCQFLevel, DataStartYear), as.integer)),
 
               by = c("qualification" = "QualificationId")) %>%
 
@@ -130,7 +130,7 @@ gender_distribution <- bind_rows(dbGetQuery(dbConn, paste("SELECT A.year, A.qual
 # and update gender_distribution ... and normalise using school rolls
 ##
 gender_distribution <- gender_distribution %>%
-    #mutate_at(vars(qualification), ~ fct_relevel(., sqa_qualifications_ordering$qualification)) %>%
+    #mutate(across(qualification, ~ fct_relevel(., sqa_qualifications_ordering$qualification))) %>%
 
     mutate(across(year, as.character)) %>%
 
@@ -278,9 +278,9 @@ time_period_axis_breaks <-
     data.frame(year = levels(computing_offering_all_qualifications$year),
                tick_label = as.logical(seq_len(length(levels(computing_offering_all_qualifications$year))) %% 2)) %>%
 
-        mutate(across(year, as.character)) %>%
-        mutate_at(vars(tick_label), ~ if_else(., year, ""))
-
+        mutate(across(year, as.character),
+               across(tick_label, ~ if_else(., year, ""))
+               )
 
 ### ###
 
