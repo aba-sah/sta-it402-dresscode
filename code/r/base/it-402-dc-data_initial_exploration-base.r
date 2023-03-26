@@ -80,8 +80,8 @@ select_focus_subjects_as_expr
 ## writeToDataStore
 ## generateVisualisations
 
-loadAndParseFile <- 
-    function(pathTofile, glimpseContent = F, qualificationType = NULL, qualificationYear = NULL) {
+loadAndParseFile <-
+    function(pathTofile, glimpseContent = FALSE, qualificationType = NULL, qualificationYear = NULL) {
         
         print(paste0("Parsing qualifications file '", pathTofile, "'"))
         
@@ -126,14 +126,22 @@ loadAndParseFile <-
                    qualification = factor(qualificationType)) %>%
             select(qualification, year, everything())
         
+        # for consistency - some files are extracted with "-Pass" - need all to be "-Passes"
+        if (sum(str_detect(names(award_data), "-Pass\\b")) > 0)
+            names(award_data) <- gsub("-Pass", "-Passes", names(award_data), fixed = TRUE)
+
         
+        if (glimpseContent)
+            glimpse(award_data)
+    
         invisible(award_data)
     }
 
+
 wrangleData <-
     function(awardData) {
-                                
-        if (!exists("redundant_column_flags") || is.null(redundant_column_flags)) 
+      
+        if (!exists("redundant_column_flags") || is.null(redundant_column_flags))
             redundant_column_flags <- c("-percentage*", "-COMP", "-PassesUngradedCourses")
         
         if((awardData %>%
@@ -145,71 +153,81 @@ wrangleData <-
             awardData <- preProcessDataAsPercentages(awardData)
 
         
+        if (sum(str_detect(names(awardData), "NumberOfCentres")) == 0)
+            awardData <- awardData %>%
+                mutate(NumberOfCentres = NA_integer_)
+        
+        
         awardData <- awardData %>%
 
-            mutate_at(c("Subject"), as.factor) %>%
-            mutate_at(c("NumberOfCentres"), as.integer) %>%
+            mutate(across(Subject, as.factor),
+                   across(NumberOfCentres, as.integer)) %>%
             rename_with(~ gsub("NA-", "NotApplicable-", .x, fixed = TRUE)) %>%
 
-            mutate_at(vars(starts_with("male-") | starts_with("female-") | starts_with("NA-") | starts_with("NotKnown-") | starts_with("all-")), as.character) %>%
-            mutate_at(vars(starts_with("male-") | starts_with("female-") | starts_with("NA-") | starts_with("NotKnown-") | starts_with("all-")), parse_number) %>%
-            mutate_at(vars(starts_with("male-") | starts_with("female-") | starts_with("NA-") | starts_with("NotKnown-") | starts_with("all-")), as.integer) %>%
+            mutate(across(starts_with(c("male-", "female-", "NA-", "NotKnown-", "all-")), as.character),
+                   across(starts_with(c("male-", "female-", "NA-", "NotKnown-", "all-")), parse_number),
+                   across(starts_with(c("male-", "female-", "NA-", "NotKnown-", "all-")), as.integer)
+                  ) %>%
+
             suppressWarnings
 
         
-        if ((awardData %>%
-
-                select(matches(c("-NoAward"))) %>%
-                summarise(no_award_recorded = (ncol(.) == 0)) 
-            ) == TRUE) {
+        if ((sum(str_detect(names(award_data), "[A-Z]-[A-Z]")) == 0) && # no practical way to tell whether the lowest grade summarised
+            (sum(str_detect(names(award_data), "-NoAward")) == 0)) {
+            #((awardData %>%
+            #
+            #    select(matches(c("-NoAward"))) %>%
+            #    summarise(no_award_recorded = (ncol(.) == 0))
+            #) == TRUE)) {
 
             tmp_df <- awardData %>%
-                select(-matches(redundant_column_flags)) 
+                select(-matches(redundant_column_flags))
             tmp_df[is.na(tmp_df)] <- 0
 
             awardData <- bind_cols(awardData,
 
                 tmp_df %>%
-                    mutate("male-NoAward" = (`male-Entries` - reduce(select(., (starts_with("male") & !ends_with("-Entries"))), `+`)), # rowSums(select(., starts_with("male-")))
-                           "female-NoAward" = (`female-Entries` - reduce(select(., (starts_with("female") & !ends_with("-Entries"))), `+`)), 
-                           "all-NoAward" = (`all-Entries` - reduce(select(., (starts_with("all") & !ends_with("-Entries"))), `+`))) %>%
+                    mutate("male-NoAward" = (`male-Entries` - reduce(select(., (starts_with("male") &  !ends_with(c("-Entries", "-Passes")))), `+`)), # rowSums(select(., starts_with("male-")))
+                           "female-NoAward" = (`female-Entries` - reduce(select(., (starts_with("female") &  !ends_with(c("-Entries", "-Passes")))), `+`)),
+                           "all-NoAward" = (`all-Entries` - reduce(select(., (starts_with("all") &  !ends_with(c("-Entries", "-Passes")))), `+`))) %>%
                     select(c("male-NoAward", "female-NoAward", "all-NoAward"))
                 ) %>%
 
                 relocate(`male-NoAward`, .after = `male-Entries`) %>%
                 relocate(`female-NoAward`, .after = `female-Entries`) %>%
-                relocate(`all-NoAward`, .after = `all-Entries`) 
+                relocate(`all-NoAward`, .after = `all-Entries`)
         }
         
 
         if ("NA-Entries" %in% names(awardData)) {
             awardData <- awardData %>%
-                mutate("NA-NoAward" = (`NA-Entries` - reduce(select(., (starts_with("NA") & !ends_with("-Entries"))), `+`))) %>% 
+                mutate("NA-NoAward" = (`NA-Entries` - reduce(select(., (starts_with("NA") &  !ends_with(c("-Entries", "-Passes")))), `+`))) %>%
                 relocate(`NA-NoAward`, .after = `NA-Entries`)
-        } 
+        }
         if ("NotKnown-Entries" %in% names(awardData)) {
             awardData <- awardData %>%
-                mutate("NotKnown-NoAward" = (`NotKnown-Entries` - reduce(select(., (starts_with("NotKnown") & !ends_with("-Entries"))), `+`))) %>%
+                mutate("NotKnown-NoAward" = (`NotKnown-Entries` - reduce(select(., (starts_with("NotKnown") &  !ends_with(c("-Entries", "-Passes")))), `+`))) %>%
                 relocate(`NotKnown-NoAward`, .after = `NotKnown-Entries`)
         }
-                
+        
         awardData <- awardData %>%
 
             pivot_longer(!c(qualification, year, Subject, NumberOfCentres), names_to = "grade", values_to = "NoOfStudents") %>%
             separate("grade", c("gender", "grade"), extra = "merge") %>%
-            mutate_at(c("gender", "grade", "year"), as.factor)
+            mutate(across(c("gender", "grade", "year"), as.factor))
 
         invisible(awardData)
     }
 
+
 preProcessDataAsPercentages <-
     function(awardData) {
-        
-        awardData <- awardData %>% 
+      
+        awardData <- awardData %>%
 
-            mutate_at(vars(starts_with("all-") | contains("-percentage")), as.character) %>%
-            mutate_at(vars(starts_with("all-") | contains("-percentage")), parse_number) %>%
-            mutate_at(vars(starts_with("all-") | contains("-percentage")), as.integer) %>%
+            mutate(across((starts_with("all-") | contains("-percentage")), as.character),
+                   across((starts_with("all-") | contains("-percentage")), parse_number),
+                   across((starts_with("all-") | contains("-percentage")), as.integer)) %>%
             suppressWarnings
          
         includeOpenGender <- ("NA-percentage" %in% names(awardData))
@@ -227,20 +245,21 @@ preProcessDataAsPercentages <-
                       select(!ends_with("-percentage"))
                      ) %>%
 
-            mutate_at(vars(starts_with("male-") & contains("-percentage")), ~round(. /100 * `male-Entries`)) %>%
-            mutate_at(vars(starts_with("female-") & contains("-percentage")), ~round(. /100 * `female-Entries`)) %>%
-            mutate_at(vars(starts_with("all-") & contains("-percentage")), ~round(. /100 * `all-Entries`))
+            mutate(across((starts_with("male-") & contains("-percentage")), ~round(. /100 * `male-Entries`)),
+                   across((starts_with("female-") & contains("-percentage")), ~round(. /100 * `female-Entries`)),
+                   across((starts_with("all-") & contains("-percentage")), ~round(. /100 * `all-Entries`))
+                   )
         
             if (includeOpenGender)
                 awardData <- awardData %>%
-                    mutate_at(vars(starts_with("NA-") & contains("-percentage")), ~round(. /100 * `NA-Entries`))
+                    mutate(across((starts_with("NA-") & contains("-percentage")), ~round(. /100 * `NA-Entries`)))
             if (includeGenderNotKnown)
                 awardData <- awardData %>%
-                    mutate_at(vars(starts_with("NotKnown-") & contains("-percentage")), ~round(. /100 * `NotKnown-Entries`)) 
+                    mutate(across((starts_with("NotKnown-") & contains("-percentage")), ~round(. /100 * `NotKnown-Entries`)))
 
         
         invisible(awardData %>%
-                    select_all(~str_replace(., "-percentage", "-")) 
+                    select_all(~str_replace(., "-percentage", "-"))
                  )
     }
 
@@ -308,11 +327,11 @@ filterInput <-
 
 
 runPipeline <-
-    function(dataFile, dbConnection = NULL, dbTable = NULL, overwriteDataStore = FALSE) {
+    function(dataFile, glimpseContent = FALSE, dbConnection = NULL, dbTable = NULL, overwriteDataStore = FALSE) {
         
         #print(dataFile)
         
-        award_data <- loadAndParseFile(dataFile)
+        award_data <- loadAndParseFile(dataFile, glimpseContent = glimpseContent)
         #print(head(award_data))      
 
         award_data <- wrangleData(award_data) 
@@ -323,6 +342,8 @@ runPipeline <-
             dbTable = "sqa_data"
         if (!is_null(dbConnection))
             writeToDataStore(award_data, dbConnection, dbTable, overwriteDataStore = overwriteDataStore)
+        
+        invisible(award_data)
     }
 
 
@@ -462,7 +483,7 @@ createSubjectGroups <-
           
             if (length(overwrite_subject_group == 1) & !is.na(overwrite_subject_group["all"])) {
                 award_data <- award_data %>%
-                    mutate(SubjectGroup = str_to_title(overwrite_subject_group[enframe(overwrite_subject_group)$name]))
+                    mutate(SubjectGroup = snakecase::to_upper_camel_case(overwrite_subject_group[enframe(overwrite_subject_group)$name]))
                
             } else {
                 search_options <- paste0("^(", paste0(enframe(overwrite_subject_group)$name, collapse = "|"), ")$")
@@ -504,6 +525,17 @@ createSubjectGroups <-
 
         invisible(award_data%>%
                     mutate_at(vars(everything()), as.character))
+    }
+
+
+getEducationAuthority <-
+    function(local_authority, authorities) {
+      
+        if (is.na(local_authority))
+            return(NA)
+        
+        row_number <- which(local_authority == deframe(authorities["LocalAuthority"]))
+        return(deframe(authorities["EducationAuthority"])[[row_number]])
     }
 
 

@@ -221,7 +221,7 @@ computing_uptake <- computing_uptake %>%
     mutate(NoOfStudents_orig = NoOfStudents,
            AllEntries_orig = AllEntries,
            across(c(NoOfStudents, AllEntries), ~ as.integer(round(. / index_factor)))
-          )%>%
+          ) %>%
 
     relocate(NoOfStudents_orig, .before = NoOfStudents) %>%
     relocate(AllEntries_orig, .before = AllEntries)
@@ -283,7 +283,18 @@ time_period_axis_breaks <-
                )
 
 ### ###
+##
+# selected subject groups
+##
 
+### ###
+select_focus_subjects <- dbGetQuery(dbConn, "SELECT DISTINCT Subject, SubjectGroup, CommonSubjectLabel FROM subject_groups")
+
+select_focus_subjects <- select_focus_subjects %>%
+    mutate(across(everything(), as.factor),
+           across(SubjectGroup, ~ fct_relevel(., sort(unique(select_focus_subjects$SubjectGroup)[str_detect(unique(select_focus_subjects$SubjectGroup),
+                                                      regex("computing", ignore_case = TRUE))])))
+           )
 
 
 ##

@@ -24,6 +24,7 @@ teacher_fte_local_authority_by_age <-  dbGetQuery(dbConn, "SELECT * FROM teacher
            across(LocalAuthority, ~ fct_relevel(., "Grant Aided", "All local authorities", after = Inf))
           )
 
+
 teacher_fte_main_subject_by_age <- dbGetQuery(dbConn, paste("SELECT DISTINCT Year, Subject, SubjectGroup, CommonSubjectLabel, AgeRange, TeacherFTE",
                                     "FROM teacher_fte_main_subject_by_age",
                                         "LEFT JOIN subject_groups",
@@ -62,5 +63,6 @@ teacher_fte_main_subject_by_gender <- dbGetQuery(dbConn, paste("SELECT DISTINCT 
 distribution_teacher_age <- dbGetQuery(dbConn, "SELECT * FROM distribution_teacher_age") %>%
 
     mutate(across(c(Age, Year), as.ordered)
-          ) 
+          )
+          
 #dbDisconnect(dbConn)
