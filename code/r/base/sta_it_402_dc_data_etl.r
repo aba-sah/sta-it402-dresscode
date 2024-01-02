@@ -40,6 +40,7 @@ sqa_qualifications_data <- bind_rows(dbGetQuery(dbConn, paste("SELECT A.*, B.NoO
 
     arrange(qualification, year) %>%
     mutate(across(where(is.character), ~ str_squish(.)),
+           across(c(NoOfStudents, AllEntries), as.integer),
            across(c(Subject, gender, grade, qualification), as.factor),
            across(year, as.ordered)) %>%
 
@@ -80,7 +81,7 @@ sqa_qualifications_ordering <- sqa_qualifications_ordering %>%
 #sqa_qualifications_ordering
 
 sqa_qualifications_data <- sqa_qualifications_data %>%
-    mutate(across(qualification, ~ fct_relevel(., levels = sqa_qualifications_ordering$qualification)))
+    mutate(across(qualification, ~ fct_relevel(., sqa_qualifications_ordering$qualification)))
 
 #levels(sqa_qualifications_data$qualification)
 
@@ -119,6 +120,7 @@ gender_distribution <- bind_rows(dbGetQuery(dbConn, paste("SELECT A.year, A.qual
     mutate(across(qualification, ~ factor(., levels = sqa_qualifications_ordering$qualification)),
            across(gender, as.factor),
            across(year, as.ordered),
+           across(c(NoOfStudents, AllEntries), as.integer),
            PercentageOfStudents = (NoOfStudents / AllEntries)
           )
 
@@ -199,6 +201,7 @@ computing_uptake <- bind_rows(dbGetQuery(dbConn, paste("SELECT A.*, B.NoOfStuden
            across(qualification, ~ factor(., levels = sqa_qualifications_ordering$qualification)),
            across(year, as.ordered),
 
+           across(c(NoOfStudents, AllEntries), as.integer),
            PercentageOfStudents = (NoOfStudents / AllEntries),
            Subject.label = eval(formatted_subject_labels_as_expr)
           )
@@ -296,6 +299,47 @@ select_focus_subjects <- select_focus_subjects %>%
                                                       regex("computing", ignore_case = TRUE))])))
            )
 
+
+### ###
+##
+# gender distribution teacher FTE
+##
+
+teacher_fte_main_subject_by_gender <- dbGetQuery(dbConn, paste("SELECT DISTINCT Year, Subject, SubjectGroup, CommonSubjectLabel, Gender,",
+                                "TeacherFTE_Main, TeacherFTE_Other",
+                                    "FROM teacher_fte_main_subject_by_gender",
+                                "LEFT JOIN subject_groups",
+                                "USING(Subject, Year)")) %>%
+
+    mutate(across(Year, as.ordered),
+           across(Gender, ~ fct_relevel(., "all", after = Inf)),
+
+           across(c(Subject, SubjectGroup), ~ fct_inorder(.)),
+           across(c(Subject, SubjectGroup), ~ fct_relevel(., sort(levels(.)[str_detect(levels(.),
+                                                                                       regex("computing", ignore_case = TRUE))]))),
+          )
+
+teacher_fte_main_subject_by_gender <- teacher_fte_main_subject_by_gender %>%
+    filter(Gender != "all") %>%
+
+    rowwise() %>%
+    mutate(TeacherFTE = sum(across(matches("TeacherFTE_\\w+")), na.rm = TRUE)) %>%
+
+    group_by(Year, Gender) %>%
+    mutate(across(TeacherFTE, list(median = median, mean = mean, total = sum), .names = "{.fn}_all_subjects")) %>%
+
+
+    bind_rows(teacher_fte_main_subject_by_gender %>%
+                filter(Gender == "all") %>%
+
+                rowwise() %>%
+                mutate(TeacherFTE = sum(across(matches("TeacherFTE_\\w+")), na.rm = TRUE)) %>%
+
+                group_by(Year) %>%
+                mutate(across(TeacherFTE, list(median = median, mean = mean, total = sum), .names = "{.fn}_all_subjects"))
+    ) %>%
+    ungroup() %>%
+    arrange(Year)
 
 ##
 #

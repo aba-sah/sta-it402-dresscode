@@ -29,120 +29,54 @@ computing_offering_all_qualifications %>%
               legend.margin = margin(0))    
 
 
-                               
+
 ## ---- gender_distribution_static_charts_overall --------
-
-tmp_df <- gender_distribution %>%
-
-    group_by(year, gender) %>%
-    summarise(median = median(NoOfStudents, na.rm = TRUE), 
-              mean = mean(NoOfStudents, na.rm = TRUE),
-              NoOfStudents = sum(NoOfStudents, na.rm = TRUE),
-              AllEntries = sum(AllEntries, na.rm = TRUE),
-              PercentageOfStudents = (NoOfStudents / AllEntries)
-              ) %>%
-    mutate(Subject = "all") 
-
-
-tmp_df %>% 
-
-    ggplot(aes(y = year, x = if_else(gender == "male", PercentageOfStudents, -PercentageOfStudents), 
-               fill = gender, colour = gender)) +
-        geom_segment(aes(xend = 0, yend = year), size = 1.5) + 
-        geom_point(aes(colour = gender), size = 0.75) +
-        #ggtitle(paste0("Gender Distribution - All Subjects")) +
-        ylab("") +  xlab(paste0("\nGender Distribution - All Subjects")) + 
-        scale_x_continuous(labels = function(x) scales::percent(abs(x)), breaks = seq(-1, 1, 0.2)) + 
-        #scale_shape_manual(values = c(6, 2)) + #-0x2640L, -0x2642L)) + # \u2640 and \u2642 
-        scale_colour_manual(values = gender_colour_scheme) + 
-        scale_fill_manual(values = gender_colour_scheme) + 
-        dressCodeTheme +
-        theme(axis.text.x = element_text(size = 9, angle = 0, vjust = 0),
-              axis.text.y = element_text(size = 8), 
-              panel.grid.major.y = element_blank(),
-              panel.grid.major.x = element_line(), 
-              legend.title = element_blank(), 
-              legend.position = "bottom")             
-
-                                   
-## ---- gender_distribution_static_charts_computing --------
-                                   
-tmp_df <- computing_uptake %>%
-
-    group_by(year, gender) %>%
-    summarise(median = median(NoOfStudents, na.rm = TRUE), 
-              mean = mean(NoOfStudents, na.rm = TRUE),
-              NoOfStudents = sum(NoOfStudents, na.rm = TRUE),
-              AllEntries = sum(AllEntries, na.rm = TRUE),
-              PercentageOfStudents = (NoOfStudents / AllEntries)
-              ) %>%
-    mutate(Subject = "all") 
-
-
-tmp_df %>% 
-
-    ggplot(aes(y = year, x = if_else(gender == "male", PercentageOfStudents, -PercentageOfStudents), fill = gender, 
-       text = paste0(gender, " - ", round(PercentageOfStudents, 2) * 100, "% in ", year))) +
-        geom_segment(aes(xend = 0, yend = year, colour = gender), size = 1.5) +
-        geom_point(aes(colour = gender), size = 0.75) +
-        #ggtitle(paste0("Gender Distribution - Computing")) +
-        ylab("") + xlab(paste0("\nGender Distribution - Computing")) +
-        scale_x_continuous(labels = function(x) scales::percent(abs(x)), breaks = seq(-1, 1, 0.2)) + 
-        scale_colour_manual(values = gender_colour_scheme) + 
-        scale_fill_manual(values = gender_colour_scheme) + 
-        dressCodeTheme +
-        theme(axis.text.x = element_text(size = 9, angle = 0, vjust = 0),
-              axis.text.y = element_text(size = 8), 
-              panel.grid.major.y = element_blank(),
-              panel.grid.major.x = element_line(), 
-              legend.title = element_blank(), 
-              legend.position = "bottom")             
-
-
-                                   
-## ---- gender_distribution_overall --------
 
 plot1 <- gender_distribution %>%
 
     group_by(year, gender) %>%
-    summarise(median = median(NoOfStudents, na.rm = TRUE), 
-              mean = mean(NoOfStudents, na.rm = TRUE),
-              NoOfStudents = sum(NoOfStudents, na.rm = TRUE),
+    summarise(across(NoOfStudents, list(median = median, mean = mean, NoOfStudents = sum), na.rm = TRUE, .names = "{.fn}"),
               AllEntries = sum(AllEntries, na.rm = TRUE),
               PercentageOfStudents = (NoOfStudents / AllEntries)
               ) %>%
-    mutate(Subject = "all") %>% 
+    ungroup() %>%
+    mutate(Subject = "All",
+           tooltip = paste0(gender, " - ", round(PercentageOfStudents, 2) * 100, "% in ", year)) %>%
 
-        ggplot(aes(y = year, x = if_else(gender == "male", PercentageOfStudents, -PercentageOfStudents), fill = gender, 
-                   text = paste0(gender, " - ", round(PercentageOfStudents, 2) * 100, "% in ", year))) +
-            geom_segment(aes(xend = 0, yend = year, colour = gender), size = 1) +
-            geom_point(aes(colour = gender), size = 0.75) +
-            xlab("\nGender Distribution Overall") + 
-                 #paste0("\nGender Distribution Overall,\n", 
-                 #       str_wrap(paste0(sqa_qualifications_ordering$qualification, collapse = ", "), width = 60, exdent = 4))) +
- 
-            ylab(NULL) +
-            scale_y_discrete(breaks = time_period_axis_breaks$year, labels = time_period_axis_breaks$tick_label) +
-            scale_x_continuous(labels = function(x) scales::percent(abs(x)), breaks = seq(-1, 1, 0.2)) + 
-            #scale_shape_manual(values = c(6, 2)) + #-0x2640L, -0x2642L)) + # \u2640 and \u2642 
-            scale_colour_manual(values = gender_colour_scheme) + 
-            scale_fill_manual(values = gender_colour_scheme) + 
-            guides(fill = guide_legend(reverse = TRUE), colour = "none") + 
-            dressCodeTheme +
-            theme(panel.grid.major.y = element_blank(),
-                  panel.grid.major.x = element_line(), 
-                  axis.text.x = element_text(size = 8, angle = 0, vjust = 0),
-                  axis.text.y = element_text(size = 9, margin = margin(0, 0, 0, 0, unit = "cm")), 
-                  axis.title = element_text(size = 11),
-                  legend.title = element_blank(), legend.position = "bottom")                                               
+    ggplot(aes(y = year, x = if_else(gender == "male", PercentageOfStudents, -PercentageOfStudents),
+               fill = gender, colour = gender, text = tooltip)) +
+        geom_segment(aes(xend = 0, yend = year), size = 1.5) +
+        geom_point(aes(colour = gender), size = 0.75) +
+        #ggtitle(paste0("Gender Distribution - All Subjects")) +
+        ylab("") +  xlab(paste0("\nGender Distribution - All Subjects")) + 
+        # scale_y_discrete(breaks = time_period_axis_breaks$year, labels = time_period_axis_breaks$tick_label) +
+        scale_x_continuous(labels = function(x) scales::percent(abs(x)), breaks = seq(-1, 1, 0.2)) +
+        #scale_shape_manual(values = c(6, 2)) + #-0x2640L, -0x2642L)) + # \u2640 and \u2642 
+        scale_colour_manual(values = gender_colour_scheme) + 
+        scale_fill_manual(values = gender_colour_scheme) + 
+        #guides(fill = guide_legend(reverse = TRUE), colour = "none") +
+        dressCodeTheme +
+        theme(axis.text.x = element_text(size = 9, angle = 0, vjust = 0),
+              axis.text.y = element_text(size = 8), 
+              axis.title = element_text(size = 11),
+              panel.grid.major.y = element_blank(),
+              #axis.text.y = element_text(size = 9, margin = margin(0, 0, 0, 0, unit = "cm")),
+              panel.grid.major.x = element_line(),
+              legend.title = element_blank(), 
+              legend.position = "bottom")
 
-                               
+#plot1
+                                   
+## ---- gender_distribution_overall --------
 
-convertToPlotly(plot1, renameTraces = TRUE, regexpr = genderRegex, height = 450, width = 800, maxMargin = 1) %>% 
-    layout(legend = list(orientation = 'h', yanchor = "bottom"),
-           margin = list(l = 1)) %>%
+convertToPlotly(plot1, renameTraces = TRUE, regexpr = genderRegex, height = 580, width = 500, maxMargin = 1,
+                yaxis = list(tickfont = list(size = 9))) %>%
+    layout(xaxis = list(title = list(font = list(size = 14)), showline = TRUE, linecolor = "rgb(175, 175, 175)",
+                        zeroline = TRUE),
+          legend = list(y = -0.12, orientation = 'h', yanchor = "bottom", title = list(text = "")),
+           margin = list(l = 5)) %>%
     config(displayModeBar = FALSE)
-                                                    
+                                                  
 
 
 ## ---- summary_tables_gender_distribution_overall --------
@@ -154,59 +88,67 @@ gender_distribution %>%
               AllEntries = sum(AllEntries, na.rm = TRUE),
               PercentageOfStudents = (NoOfStudents / AllEntries)
               ) %>%
-    mutate_at(vars(PercentageOfStudents), ~ (round(., 3) * 100)) %>%
-    select(c(gender, PercentageOfStudents)) %>%
+    mutate(across(PercentageOfStudents, ~ (round(., 3) * 100))) %>%
+    select(gender, PercentageOfStudents) %>%
     rename_with(~ c(" ", "% of all Students")) %>%
 
     kable() %>% #caption = "\nGender distribution overall") %>%
     kable_paper("striped", full_width = FALSE, position = "left")    
-                               
-                                   
-## ---- gender_distribution_computing --------
+
+
+## ---- gender_distribution_static_charts_computing --------
 
 focus_subject_label <- "computing / information systems / data science"
 
 plot1 <- computing_uptake %>%
 
     group_by(year, gender) %>%
-    summarise(median = median(NoOfStudents, na.rm = TRUE), 
-              mean = mean(NoOfStudents, na.rm = TRUE),
-              NoOfStudents = sum(NoOfStudents, na.rm = TRUE),
+    summarise(across(NoOfStudents, list(median = median, mean = mean, NoOfStudents = sum), na.rm = TRUE, .names = "{.fn}"),
               AllEntries = sum(AllEntries, na.rm = TRUE),
               PercentageOfStudents = (NoOfStudents / AllEntries)
               ) %>%
-    mutate(Subject = "all") %>% 
-                                   
+    ungroup() %>%
+    mutate(Subject = "All",
+           tooltip = paste0(gender, " - ", round(PercentageOfStudents, 2) * 100, "% in ", year)
+          ) %>%
 
-            ggplot(aes(y = year, x = if_else(gender == "male", PercentageOfStudents, -PercentageOfStudents), fill = gender,
-                       text = paste0(gender, " - ", round(PercentageOfStudents, 2) * 100, "% in ", year))) +
-                geom_segment(aes(xend = 0, yend = year, colour = gender), size = 1) +
-                geom_point(aes(colour = gender), size = 0.75) +
-                xlab(paste0("\nGender Distribution - ", str_to_title(focus_subject_label))) +
-                     #paste0("\nGender Distribution - ", str_to_title(focus_subject_label), "\n",
-                     #       str_wrap(paste0(sqa_qualifications_ordering$qualification, collapse = ", "), width = 60, exdent = 4))) + 
-                ylab(NULL) +
-                scale_y_discrete(breaks = time_period_axis_breaks$year, labels = time_period_axis_breaks$tick_label) +
-                scale_x_continuous(labels = function(x) scales::percent(abs(x)), breaks = seq(-1, 1, 0.2)) + 
-                scale_colour_manual(values = gender_colour_scheme) + 
-                scale_fill_manual(values = gender_colour_scheme) + 
-                guides(fill = guide_legend(reverse = TRUE), colour = guide_legend(reverse = TRUE)) + 
-                dressCodeTheme +
-                theme(panel.grid.major.y = element_blank(),
-                      panel.grid.major.x = element_line(), 
-                      axis.text.x = element_text(size = 8, angle = 0, vjust = 0),
-                      axis.text.y = element_text(size = 9), 
-                      axis.title = element_text(size = 11),
-                      legend.title = element_blank(), 
-                      legend.position = "bottom"
-                     )             
+    ggplot(aes(y = year, x = if_else(gender == "male", PercentageOfStudents, -PercentageOfStudents), fill = gender,
+               text = tooltip)) +
+        geom_segment(aes(xend = 0, yend = year, colour = gender), size = 1.5) +
+        geom_point(aes(colour = gender), size = 0.75) +
+        #ggtitle(paste0("Gender Distribution - Computing")) +
+        xlab("\nGender Distribution - All Computing") +
+            #paste0("\nGender Distribution - ", str_to_title(focus_subject_label))) +
+             #paste0("\nGender Distribution - ", str_to_title(focus_subject_label), "\n",
+             #       str_wrap(paste0(sqa_qualifications_ordering$qualification, collapse = ", "), width = 60, exdent = 4))) +
+        ylab(NULL) +
+        #scale_y_discrete(breaks = time_period_axis_breaks$year, labels = time_period_axis_breaks$tick_label) +
+        scale_x_continuous(labels = function(x) scales::percent(abs(x)), breaks = seq(-1, 1, 0.2)) +
+        scale_colour_manual(values = gender_colour_scheme) +
+        scale_fill_manual(values = gender_colour_scheme) +
+        #guides(fill = guide_legend(reverse = TRUE), colour = guide_legend(reverse = TRUE)) +
+        dressCodeTheme +
+        theme(axis.text.x = element_text(size = 9, angle = 0, vjust = 0),
+              axis.text.y = element_text(size = 8),
+              panel.grid.major.y = element_blank(),
+              panel.grid.major.x = element_line(),
+              legend.title = element_blank(),
+              legend.position = "bottom")
 
-convertToPlotly(plot1, renameTraces = TRUE, regexpr = genderRegex, height = 450, width = 800, maxMargin = 1) %>% 
-    layout(#legend = list(orientation = 'h', yanchor = "bottom"),
-           margin = list(l = 1)) %>%
-    config(displayModeBar = FALSE)
+#plot1
 
 rm(focus_subject_label)
+
+                                   
+## ---- gender_distribution_computing --------
+
+convertToPlotly(plot1, renameTraces = TRUE, regexpr = genderRegex, height = 580, width = 500, maxMargin = 1,
+                yaxis = list(tickfont = list(size = 9))) %>%
+    layout(xaxis = list(title = list(font = list(size = 14)), showline = TRUE, linecolor = "rgb(175, 175, 175)",
+                        zeroline = TRUE),
+          legend = list(y = -0.12, orientation = 'h', yanchor = "bottom", title = list(text = "")),
+          margin = list(l = 5)) %>%
+    config(displayModeBar = FALSE)
 
 
 ## ---- summary_tables_gender_distribution_computing --------
@@ -218,8 +160,8 @@ computing_uptake %>%
               AllEntries = sum(AllEntries, na.rm = TRUE),
               PercentageOfStudents = (NoOfStudents / AllEntries)
               ) %>%
-    mutate_at(vars(PercentageOfStudents), ~ (round(., 3) * 100)) %>%
-    select(c(gender, PercentageOfStudents)) %>%
+    mutate(across(PercentageOfStudents, ~ (round(., 3) * 100))) %>%
+    select(gender, PercentageOfStudents) %>%
     rename_with(~ c(" ", "% of Computing Entries")) %>%
 
     kable() %>% #caption = "\nGender distribution, computing only") %>%
@@ -1127,29 +1069,32 @@ distribution_teacher_age  %>%
           ) %>%
     distinct(Year, across(matches("\\w+Age$")), PercentOver55) %>%
     pivot_longer(matches("Age$"), names_to = "Metric", values_to = "Age") %>%
-    mutate(across(Metric, ~ gsub("Age", "", .))) %>%
+    mutate(across(Metric, ~ gsub("Age", "", .)),
+           across(Metric, ~ fct_inorder(.)) # or updated ggplot messes up legend
+           ) %>%
 
-    ggplot(aes(Year, Age, colour = Metric, group = Metric)) + 
-        geom_line(aes(lty = Metric), size = 1.05) + 
-        ylab("Age") + 
-        xlab("") + 
+    ggplot(aes(Year, Age, colour = Metric, group = Metric)) +
+        geom_line(aes(lty = Metric), size = 1.05) +
+        ylab("Age") +
+        xlab("") +
         dressCodeTheme +
-        scale_shape_manual(values = seq(6, 14)) +
-        scale_linetype_manual("Teacher Age", 
+        scale_linetype_manual("Teacher Age",
                                 values = c("Average" = 4, "Median" = 2, "Minimum" = 3, "Maximum" = 3),
                                 labels = c("Average", "Median", "Minimum", "Maximum")) +
-        scale_colour_manual("Teacher Age", 
-                                values = c("Average" = "blue", "Median" = "red", "Minimum" = "cyan", "Maximum" = "cyan"),
+        scale_colour_manual("Teacher Age",
+                                values = c("Average" = as.character(color("high contrast")(3)["red"]),
+                                           "Median" = as.character(color("high contrast")(3)["blue"]),
+                                           "Minimum" = as.character(color("vibrant")(7)["cyan"]),
+                                           "Maximum" = as.character(color("vibrant")(7)["cyan"])),
                                 labels = c("Average", "Median", "Minimum", "Maximum")) +
 
 
-        theme(legend.position = "bottom", 
-              legend.title = element_blank(), 
+        theme(legend.position = "bottom",
+              legend.title = element_blank(),
               legend.margin = margin(0),
               legend.text = element_text(size = 18),
-              axis.text.y = element_text(size = 16), 
-              ) 
-
+              axis.text.y = element_text(size = 16),
+              )
                           
                            
 ## ---- teacher_demographics_head_count_teacher_age_central_values --------                                           
@@ -1158,59 +1103,63 @@ distribution_teacher_age  %>%
 
     distinct(Year, across(matches("\\w+Age$")), PercentOver55) %>%
     pivot_longer(matches("Age$"), names_to = "Metric", values_to = "Age") %>%
-    mutate(across(Metric, ~ gsub("Age", "", .))) %>%
+    mutate(across(Metric, ~ gsub("Age", "", .)),
+           across(Metric, ~ fct_inorder(.)) # or updated ggplot messes up legend
+           ) %>%
 
-    ggplot(aes(Year, Age, colour = Metric, group = Metric)) + 
-        geom_line(aes(lty = Metric), size = 1.05) + 
-        ylab("Age") + 
-        xlab("") + 
+    ggplot(aes(Year, Age, colour = Metric, group = Metric)) +
+        geom_line(aes(lty = Metric), size = 1.05) +
+        ylab("Age") +
+        xlab("") +
         dressCodeTheme +
         scale_shape_manual(values = seq(6, 14)) +
-        scale_linetype_manual("Teacher Age", 
+        scale_linetype_manual("Teacher Age",
                                 values = c("Average" = 4, "Median" = 2),
                                 labels = c("Average", "Median")) +
-        scale_colour_manual("Teacher Age", 
-                                values = c("Average" = "blue", "Median" = "red"),
+        scale_colour_manual("Teacher Age",
+                                values = c("Average" = as.character(color("high contrast")(3)["red"]),
+                                           "Median" = as.character(color("high contrast")(3)["blue"])
+                                           ),
                                 labels = c("Average", "Median")) +
 
 
-        theme(legend.position = "bottom", 
-              legend.title = element_blank(), 
+        theme(legend.position = "bottom",
+              legend.title = element_blank(),
               legend.margin = margin(0),
               legend.text = element_text(size = 18),
-              axis.text.y = element_text(size = 16), 
-              
-              ) 
+              axis.text.y = element_text(size = 16),
+              )
 
-                             
-                           
-## ---- teacher_demographics_age_over_time_median_fte_all_local_authorities --------                            
-                           
+
+## ---- teacher_demographics_age_over_time_median_fte_all_local_authorities --------
+
 teacher_fte_local_authority_by_age %>%
 
     filter((AgeRange != "Average") & (LocalAuthority != "All local authorities")) %>%
     group_by(AgeRange, Year) %>%
-    summarise(across(TeacherFTE, list(median = median, average = mean), na.rm = TRUE)) %>%
+    summarise(across(TeacherFTE, list(median = ~ median(., na.rm = TRUE),
+                                      average = ~ mean(., na.rm = TRUE))
+                    )) %>%
     ungroup() %>%
 
     ggplot(aes(Year, TeacherFTE_median, colour = AgeRange, group = AgeRange, shape = AgeRange)) +
         geom_point(size = 0.95) +
-        geom_line() + 
-        ylab("Median FTE - All Local Authorities") + 
-        xlab("") + 
+        geom_line() +
+        ylab("Median FTE - All Local Authorities") +
+        xlab("") +
         dressCodeTheme +
-        scale_colour_brewer(palette = "Dark2", direction =  -1) + 
-        scale_shape_manual(values = seq(6, 14)) +
+        scale_colour_brewer("Age Range", palette = "Dark2", direction =  -1) +
+        scale_shape_manual("Age Range", values = seq(6, 14)) +
 
 
-        theme(#legend.position = "bottom", 
-              legend.title = element_blank(), 
-              legend.margin = margin(0)
-              ) 
+        theme(#legend.position = "bottom",
+              #legend.title = element_blank(),
+              legend.margin = margin(0),
+              axis.text.x = element_text(size = 14, angle = 0, vjust = 0),
+              )
 
 
-                           
-## ---- teacher_demographics_age_over_time_total_fte_all_local_authorities--------                            
+## ---- teacher_demographics_age_over_time_total_fte_all_local_authorities--------
 
 teacher_fte_local_authority_by_age %>%
 
@@ -1218,57 +1167,60 @@ teacher_fte_local_authority_by_age %>%
 
     ggplot(aes(Year, TeacherFTE, colour = AgeRange, group = AgeRange, shape = AgeRange)) +
         geom_point(size = 1.15) +
-        geom_line() + 
-        ylab("Total FTE - All Local Authorities") + 
-        xlab("") + 
+        geom_line() +
+        ylab("Total FTE - All Local Authorities") +
+        xlab("") +
         dressCodeTheme +
-        scale_colour_brewer(palette = "Dark2", direction =  -1) + 
-        scale_shape_manual(values = seq(6, 14)) +
+        scale_colour_brewer("Age Range", palette = "Dark2", direction =  -1) +
+        scale_shape_manual("Age Range", values = seq(6, 14)) +
 
 
-        theme(legend.title = element_blank(), 
+        theme(#legend.title = element_blank(),
               legend.margin = margin(0),
-              axis.text.x = element_text(size = 14, angle = 45, vjust = 0.5),
-              ) 
+              axis.text.x = element_text(size = 14, angle = 0, vjust = 0),
+              )
                            
-                           
-                           
+
 ## ---- teacher_demographics_age_median_fte_all_local_authorities --------
 
 teacher_fte_local_authority_by_age %>%
     filter((AgeRange != "Average") & (LocalAuthority != "All local authorities")) %>%
     group_by(Year, AgeRange) %>%
-    summarise(across(TeacherFTE, list(median = median, average = mean), na.rm = TRUE)) %>%
+    summarise(across(TeacherFTE, list(median = ~ median(., na.rm = TRUE),
+                                      average = ~ mean(., na.rm = TRUE))
+                    )) %>%
     ungroup() %>%
-    
+
     ggplot(aes(AgeRange, TeacherFTE_median, colour = Year, group = Year)) +
         #geom_point(size = 0.5, show.legend = FALSE) +
-        geom_line() + 
-        ylab("Median FTE - All Local Authorities") + xlab("") + 
+        geom_line() +
+        ylab("Median FTE - All Local Authorities") + xlab("Age Range") +
         dressCodeTheme +
         #scale_colour_romaO(discrete = TRUE) +
-        
-        theme(legend.title = element_blank(), 
+
+        theme(axis.text.x = element_text(angle = 0, vjust = 0),
+              legend.title = element_blank(),
               legend.margin = margin(0)
-              ) 
+              )
 
 
-                           
+
 ## ---- teacher_demographics_age_fte_all_local_authorities --------
 
 teacher_fte_local_authority_by_age %>%
     filter((AgeRange != "Average") & (LocalAuthority == "All local authorities")) %>%
-    
+
     ggplot(aes(AgeRange, TeacherFTE, colour = Year, group = Year)) +
         #geom_point(size = 0.5, show.legend = FALSE) +
-        geom_line() + 
-        ylab("Total FTE - All Local Authorities") + xlab("") + 
+        geom_line() +
+        ylab("Total FTE - All Local Authorities") + xlab("Age Range") +
         dressCodeTheme +
         #scale_colour_romaO(discrete = TRUE) +
-        
-        theme(legend.title = element_blank(), 
+
+        theme(axis.text.x = element_text(angle = 0, vjust = 0),
+              legend.title = element_blank(),
               legend.margin = margin(0)
-              ) 
+              )
 
 
                            
@@ -1277,76 +1229,84 @@ teacher_fte_local_authority_by_age %>%
 teacher_fte_main_subject_by_age %>%
     filter(AgeRange != "Average") %>%
     group_by(AgeRange) %>%
-    summarise(across(TeacherFTE, list(median = median, average = mean), na.rm = TRUE)) %>%
+    summarise(across(TeacherFTE, list(median = ~ median(., na.rm = TRUE),
+                                      average = ~ mean(., na.rm = TRUE))
+                    )) %>%
 
     bind_rows(teacher_fte_main_subject_by_age %>%
                 filter(AgeRange != "Average") %>%
-                filter((SubjectGroup %in% c("Computing", "Sciences", "ModernLanguages", "English", "Maths")) & 
+                filter((SubjectGroup %in% c("Computing", "Sciences", "ModernLanguages", "English", "Maths")) &
                        !(Subject %in% c("General Science", "Science (General)", "Community Languages", "Other Modern Languages"))) %>%
 
                 group_by(AgeRange, SubjectGroup) %>%
-                summarise(across(TeacherFTE, list(median = median, average = mean), na.rm = TRUE))
-    ) %>%
+                summarise(across(TeacherFTE, list(median = ~ median(., na.rm = TRUE),
+                                      average = ~ mean(., na.rm = TRUE))
+                                ))
+             ) %>%
     mutate(across(SubjectGroup, ~ fct_recode(., "Sciences (excl. General)" = "Sciences")),
-           across(SubjectGroup, ~ fct_explicit_na(., "All Subjects")),
+           across(SubjectGroup, ~ fct_na_value_to_level(., level = "All Subjects")),
            across(SubjectGroup, ~ fct_relevel(., "All Subjects")),
            across(SubjectGroup, ~ fct_relevel(., "ModernLanguages", "English", "Maths", after = Inf)),
           ) %>%
-    
+
     ggplot(aes(AgeRange, TeacherFTE_median, colour = SubjectGroup, group = SubjectGroup, shape = SubjectGroup)) +
         geom_point(size = 0.95) +
-        geom_line() + 
-        ggtitle("Computing cf. English, Maths, Sciences & Modern Languages") + 
-        ylab("Median FTE") + xlab("") + 
+        geom_line() +
+        ggtitle("Computing cf. English, Maths, Sciences & Modern Languages") +
+        ylab("Median FTE") + xlab("") +
         dressCodeTheme +
         scale_colour_brewer(palette = "Dark2") + #, direction = -1) +
-        theme(legend.position = "bottom", 
-              legend.title = element_blank(), 
+        theme(legend.position = "bottom",
+              legend.title = element_blank(),
               legend.margin = margin(0)
               )
 
 
-                           
+
 ## ---- teacher_demographics_age_fte_computing_cf_sciences_modern_languages --------
 
 teacher_fte_main_subject_by_age %>%
     filter(AgeRange != "Average") %>%
     group_by(AgeRange) %>%
-    summarise(across(TeacherFTE, list(median = median, average = mean), na.rm = TRUE)) %>%
+    summarise(across(TeacherFTE, list(median = ~ median(., na.rm = TRUE),
+                                      average = ~ mean(., na.rm = TRUE))
+                    )) %>%
 
     bind_rows(teacher_fte_main_subject_by_age %>%
                 filter(AgeRange != "Average") %>%
-                filter((SubjectGroup %in% c("Computing", "Sciences", "ModernLanguages")) & 
+                filter((SubjectGroup %in% c("Computing", "Sciences", "ModernLanguages")) &
                        !(Subject %in% c("General Science", "Science (General)", "Community Languages", "Other Modern Languages"))) %>%
                 group_by(AgeRange, SubjectGroup) %>%
                 summarise(across(TeacherFTE, list(median = median, average = mean), na.rm = TRUE))
     ) %>%
     mutate(across(SubjectGroup, ~ fct_recode(., "Sciences (excl. General)" = "Sciences")),
-           across(SubjectGroup, ~ fct_explicit_na(., "All Subjects")),
+           across(SubjectGroup, ~ fct_na_value_to_level(., level = "All Subjects")),
            across(SubjectGroup, ~ fct_relevel(., "All Subjects")),
            across(SubjectGroup, ~ fct_relevel(., "ModernLanguages", after = Inf)),
           ) %>%
-    
+
     ggplot(aes(AgeRange, TeacherFTE_median, colour = SubjectGroup, group = SubjectGroup, shape = SubjectGroup)) +
         geom_point(size = 0.95) +
-        geom_line() + 
-        ggtitle("Computing cf. Sciences & Modern Languages") + 
-        ylab("Median FTE") + xlab("") + 
+        geom_line() +
+        ggtitle("Computing cf. Sciences & Modern Languages") +
+        ylab("Median FTE") + xlab("") +
         dressCodeTheme +
         scale_colour_brewer(palette = "Dark2") + #, direction = -1) +
-        theme(legend.position = "bottom", 
-              legend.title = element_blank(), 
+        theme(legend.position = "bottom",
+              legend.title = element_blank(),
               legend.margin = margin(0)
               )
 
 
-                           
+
 ## ---- teacher_demographics_age_fte_computing_cf_all_sciences_modern_languages --------
 
 teacher_fte_main_subject_by_age %>%
     filter(AgeRange != "Average") %>%
     group_by(AgeRange) %>%
-    summarise(across(TeacherFTE, list(median = median, average = mean), na.rm = TRUE)) %>%
+    summarise(across(TeacherFTE, list(median = ~ median(., na.rm = TRUE),
+                                      average = ~ mean(., na.rm = TRUE))
+                    )) %>%
 
     bind_rows(teacher_fte_main_subject_by_age %>%
                 filter(AgeRange != "Average") %>%
@@ -1354,33 +1314,35 @@ teacher_fte_main_subject_by_age %>%
                 group_by(AgeRange, SubjectGroup) %>%
                 summarise(across(TeacherFTE, list(median = median, average = mean), na.rm = TRUE))
     ) %>%
-    mutate(across(SubjectGroup, ~ fct_explicit_na(., "All Subjects")),
+    mutate(across(SubjectGroup, ~ fct_na_value_to_level(., level = "All Subjects")),
            across(SubjectGroup, ~ fct_relevel(., "All Subjects")),
            across(SubjectGroup, ~ fct_relevel(., "ModernLanguages", after = Inf)),
            across(SubjectGroup, ~ fct_recode(., "All Sciences" = "Sciences")),
-           across(SubjectGroup, ~ fct_recode(., "Modern & Community Languages" = "ModernLanguages")), 
+           across(SubjectGroup, ~ fct_recode(., "Modern & Community Languages" = "ModernLanguages")),
           ) %>%
-    
+
     ggplot(aes(AgeRange, TeacherFTE_median, colour = SubjectGroup, group = SubjectGroup, shape = SubjectGroup)) +
         geom_point(size = 0.95) +
-        geom_line() + 
-        ggtitle("Computing cf. Sciences, Modern & Community Languages") + 
-        ylab("Median FTE") + xlab("") + 
+        geom_line() +
+        ggtitle("Computing cf. Sciences, Modern & Community Languages") +
+        ylab("Median FTE") + xlab("") +
         dressCodeTheme +
         scale_colour_brewer(palette = "Dark2") + #, direction = -1) +
-        theme(legend.position = "bottom", 
-              legend.title = element_blank(), 
+        theme(legend.position = "bottom",
+              legend.title = element_blank(),
               legend.margin = margin(0)
               )
 
 
-                           
+
 ## ---- teacher_demographics_age_fte_computing_cf_english_maths_all_sciences_modern_languages --------
 
 teacher_fte_main_subject_by_age %>%
     filter(AgeRange != "Average") %>%
     group_by(AgeRange) %>%
-    summarise(across(TeacherFTE, list(median = median, average = mean), na.rm = TRUE)) %>%
+    summarise(across(TeacherFTE, list(median = ~ median(., na.rm = TRUE),
+                                      average = ~ mean(., na.rm = TRUE))
+                    )) %>%
 
     bind_rows(teacher_fte_main_subject_by_age %>%
                 filter(AgeRange != "Average") %>%
@@ -1389,66 +1351,71 @@ teacher_fte_main_subject_by_age %>%
                 group_by(AgeRange, SubjectGroup) %>%
                 summarise(across(TeacherFTE, list(median = median, average = mean), na.rm = TRUE))
     ) %>%
-    mutate(across(SubjectGroup, ~ fct_explicit_na(., "All Subjects")),
+    mutate(across(SubjectGroup, ~ fct_na_value_to_level(., level = "All Subjects")),
            across(SubjectGroup, ~ fct_relevel(., "All Subjects")),
            across(SubjectGroup, ~ fct_relevel(., "ModernLanguages", "English", "Maths", after = Inf)),
            across(SubjectGroup, ~ fct_recode(., "All Sciences" = "Sciences")),
-           across(SubjectGroup, ~ fct_recode(., "Modern & Community Languages" = "ModernLanguages")),          
+           across(SubjectGroup, ~ fct_recode(., "Modern & Community Languages" = "ModernLanguages")),
           ) %>%
-    
+
     ggplot(aes(AgeRange, TeacherFTE_median, colour = SubjectGroup, group = SubjectGroup, shape = SubjectGroup)) +
         geom_point(size = 0.95) +
-        geom_line() + 
-        ggtitle("Computing cf. English, Maths, Sciences, Modern & Community Languages") + 
-        ylab("Median FTE") + xlab("") + 
+        geom_line() +
+        ggtitle("Computing cf. English, Maths, Sciences, Modern & Community Languages") +
+        ylab("Median FTE") + xlab("") +
         dressCodeTheme +
         scale_colour_brewer(palette = "Dark2") + #, direction = -1) +
-        theme(legend.position = "bottom", 
-              legend.title = element_blank(), 
+        theme(legend.position = "bottom",
+              legend.title = element_blank(),
               legend.margin = margin(0)
               )
 
 
-                           
+
 ## ---- teacher_demographics_age_fte_computing_cf_sciences --------
 
 teacher_fte_main_subject_by_age %>%
     filter(AgeRange != "Average") %>%
     group_by(AgeRange) %>%
-    summarise(across(TeacherFTE, list(median = median, average = mean), na.rm = TRUE)) %>%
+    summarise(across(TeacherFTE, list(median = ~ median(., na.rm = TRUE),
+                                      average = ~ mean(., na.rm = TRUE))
+                    )) %>%
 
     bind_rows(teacher_fte_main_subject_by_age %>%
                 filter(AgeRange != "Average") %>%
-                filter((SubjectGroup  == "Computing") | 
+                filter((SubjectGroup  == "Computing") |
                        (Subject %in% c("Biology", "Chemistry", "Physics"))) %>%
                 group_by(AgeRange, Subject) %>%
-                summarise(across(TeacherFTE, list(median = median, average = mean), na.rm = TRUE))
+                summarise(across(TeacherFTE, list(median = ~ median(., na.rm = TRUE),
+                                                  average = ~ mean(., na.rm = TRUE))
+                                ))
     ) %>%
-    mutate(across(Subject, ~ fct_explicit_na(., "All Subjects")),
+    mutate(across(Subject, ~ fct_na_value_to_level(., level = "All Subjects")),
            across(Subject, ~ fct_relevel(., "All Subjects")),
           ) %>%
     arrange(AgeRange, Subject) %>%
-    
+
     ggplot(aes(AgeRange, TeacherFTE_median, colour = Subject, group = Subject, shape = Subject)) +
         geom_point(size = 0.95) +
-        geom_line() + 
-        ggtitle("Median Teacher FTE - Computing cf. Sciences") + 
-        ylab("Median FTE") + xlab("") + 
+        geom_line() +
+        ggtitle("Median Teacher FTE - Computing cf. Sciences") +
+        ylab("Median FTE") + xlab("") +
         dressCodeTheme +
         scale_colour_brewer(palette = "Dark2") + #, direction = -1) +
-        theme(legend.position = "bottom", 
-              legend.title = element_blank(), 
+        theme(legend.position = "bottom",
+              legend.title = element_blank(),
               legend.margin = margin(0)
               )
 
 
-                          
 ## ---- teacher_demographics_age_fte_computing_cf_modern_languages --------
 
 teacher_fte_main_subject_by_age %>%
     filter(AgeRange != "Average") %>%
     group_by(AgeRange) %>%
-    summarise(across(TeacherFTE, list(median = median, average = mean), na.rm = TRUE)) %>%
+    summarise(across(TeacherFTE, list(median = ~ median(., na.rm = TRUE),
+                                      average = ~ mean(., na.rm = TRUE))
+                    )) %>%
 
     bind_rows(teacher_fte_main_subject_by_age %>%
                 mutate(across(CommonSubjectLabel, as.character),
@@ -1457,34 +1424,36 @@ teacher_fte_main_subject_by_age %>%
                                                          )),
                        across(CommonSubjectLabel, as.factor)
                       ) %>%
-                
+
                 filter(AgeRange != "Average") %>%
-                filter((SubjectGroup  == "Computing") | 
+                filter((SubjectGroup  == "Computing") |
                        (CommonSubjectLabel %in% c("Gaelic", "French", "German", "Spanish", "Italian"))) %>%
                 group_by(AgeRange, Subject) %>%
-                summarise(across(TeacherFTE, list(median = median, average = mean), na.rm = TRUE))
+                summarise(across(TeacherFTE, list(median = ~ median(., na.rm = TRUE),
+                                                  average = ~ mean(., na.rm = TRUE))
+                                ))
     ) %>%
-    mutate(across(Subject, ~ fct_explicit_na(., "All Subjects")),
+    mutate(across(Subject, ~ fct_na_value_to_level(., level = "All Subjects")),
            across(Subject, ~ fct_relevel(., "All Subjects")),
           ) %>%
     arrange(AgeRange, Subject) %>%
-    
+
     ggplot(aes(AgeRange, TeacherFTE_median, colour = Subject, group = Subject, shape = Subject)) +
         geom_point(size = 0.95) +
-        geom_line() + 
-        ggtitle("Median Teacher FTE - Computing cf. Modern Languages") + 
-        ylab("Median FTE") + xlab("") + 
+        geom_line() +
+        ggtitle("Median Teacher FTE - Computing cf. Modern Languages") +
+        ylab("Median FTE") + xlab("") +
         dressCodeTheme +
         scale_colour_brewer(palette = "Dark2") + #, direction = -1) +
-        theme(legend.position = "bottom", 
-              legend.title = element_blank(), 
+        #scale_colour_manual(values = colorRampPalette(brewer.pal(7, "Dark2"))(7)) +
+        scale_shape_manual(values = 0:6) +
+        theme(legend.position = "bottom",
+              legend.title = element_blank(),
               legend.margin = margin(0)
               )
 
-
-                           
+              
 ## ---- teacher_demographics_age_over_time_computing_vs_sciences --------
-
 
 teacher_fte_main_subject_by_age %>%
     filter(AgeRange != "Average") %>%
@@ -1498,14 +1467,18 @@ teacher_fte_main_subject_by_age %>%
                 select(Year, AgeRange, Subject, TeacherFTE)
     ) %>%
 
-    mutate(across(Subject, ~ fct_explicit_na(., "Median - All Subjects")),
+    mutate(across(Subject, ~ fct_na_value_to_level(., level = "Median - All Subjects")),
            across(Subject, ~ fct_relevel(., "Median - All Subjects")),
           ) %>%
      
     ggplot(aes(AgeRange, TeacherFTE, colour = Subject, group = Subject, shape = Subject)) +
         geom_point(size = 0.95) +
         geom_line() + 
-        ggtitle("Teacher FTE Change 2011-2021 - Computing cf. Sciences") + 
+        ggtitle(paste("Teacher FTE Change",
+                      paste0(min(levels(teacher_fte_main_subject_by_age$Year), na.rm = TRUE), "-",
+                             max(levels(teacher_fte_main_subject_by_age$Year), na.rm = TRUE)
+                            ),
+                      "- Computing cf. Sciences")) +
         ylab("Median FTE") + xlab("") + 
         dressCodeTheme +
         scale_colour_brewer(palette = "Dark2") + #, direction = -1) +
@@ -1540,14 +1513,18 @@ teacher_fte_main_subject_by_age %>%
                 select(Year, AgeRange, Subject, TeacherFTE)
     ) %>%
 
-    mutate(across(Subject, ~ fct_explicit_na(., "Median - All Subjects")),
+    mutate(across(Subject, ~ fct_na_value_to_level(., level = "Median - All Subjects")),
            across(Subject, ~ fct_relevel(., "Median - All Subjects")),
           ) %>%
     
     ggplot(aes(AgeRange, TeacherFTE, colour = Subject, group = Subject, shape = Subject)) +
         geom_point(size = 0.95) +
         geom_line() + 
-        ggtitle("Teacher FTE Change 2011-2021 - Computing cf. Modern Languages") + 
+        ggtitle(paste("Teacher FTE Change",
+                      paste0(min(levels(teacher_fte_main_subject_by_age$Year), na.rm = TRUE), "-",
+                             max(levels(teacher_fte_main_subject_by_age$Year), na.rm = TRUE)
+                            ),
+                      "- Computing cf. Modern Languages")) +
         ylab("Median FTE") + xlab("") + 
         dressCodeTheme +
         scale_colour_brewer(palette = "Dark2") + #, direction = -1) +
@@ -1559,7 +1536,6 @@ teacher_fte_main_subject_by_age %>%
               axis.text.x = element_text(size = 11, angle = 45, vjust = 0.5),
               ) +
         facet_wrap(~ Year, nrow = 2)
-
 
 
                            
@@ -1577,7 +1553,7 @@ teacher_fte_main_subject_by_age %>%
                 select(Year, AgeRange, Subject, TeacherFTE)
     ) %>%
 
-    mutate(across(Subject, ~ fct_explicit_na(., "Median - All Subjects")),
+    mutate(across(Subject, ~ fct_na_value_to_level(., level = "Median - All Subjects")),
            across(Subject, ~ fct_relevel(., "Median - All Subjects")),
           ) %>%
     #arrange(Year, AgeRange, Subject) %>%
@@ -1585,7 +1561,11 @@ teacher_fte_main_subject_by_age %>%
     ggplot(aes(Year, TeacherFTE, colour = Subject, group = Subject, shape = Subject)) +
         geom_point(size = 0.95) +
         geom_line() + 
-        ggtitle("Teacher FTE Change 2011-2021 - Computing cf. Sciences") + 
+        ggtitle(paste("Teacher FTE Change",
+                      paste0(min(levels(teacher_fte_main_subject_by_age$Year), na.rm = TRUE), "-",
+                             max(levels(teacher_fte_main_subject_by_age$Year), na.rm = TRUE)
+                            ),
+                      "- Computing cf. Sciences")) +
         ylab("Median FTE") + xlab("") + 
         dressCodeTheme +
         scale_colour_brewer(palette = "Dark2") + #, direction = -1) +
@@ -1621,7 +1601,7 @@ teacher_fte_main_subject_by_age %>%
                 select(Year, AgeRange, Subject, TeacherFTE)
     ) %>%
 
-    mutate(across(Subject, ~ fct_explicit_na(., "Median - All Subjects")),
+    mutate(across(Subject, ~ fct_na_value_to_level(., level = "Median - All Subjects")),
            across(Subject, ~ fct_relevel(., "Median - All Subjects")),
           ) %>%
     #arrange(Year, AgeRange, Subject) %>%
@@ -1629,7 +1609,11 @@ teacher_fte_main_subject_by_age %>%
     ggplot(aes(Year, TeacherFTE, colour = Subject, group = Subject, shape = Subject)) +
         geom_point(size = 0.95) +
         geom_line() + 
-        ggtitle("Teacher FTE Change 2011-2021 - Computing cf. Modern Languages") + 
+        ggtitle(paste("Teacher FTE Change",
+                      paste0(min(levels(teacher_fte_main_subject_by_age$Year), na.rm = TRUE), "-",
+                             max(levels(teacher_fte_main_subject_by_age$Year), na.rm = TRUE)
+                            ),
+                      "- Computing cf. Modern Languages")) +
         ylab("Median FTE") + xlab("") + 
         dressCodeTheme +
         scale_colour_brewer(palette = "Dark2") + #, direction = -1) +
@@ -1644,10 +1628,474 @@ teacher_fte_main_subject_by_age %>%
 
 
 
-                           
-                           
+## ---- teacher_demographics_gender_distribution_fte_overall --------
+
+plot1 <- teacher_fte_main_subject_by_gender %>%
+    filter(Gender != "all") %>%
+
+    group_by(Year) %>%
+    mutate(total_year = sum(TeacherFTE, na.rm = TRUE)) %>%
+
+    ungroup() %>%
+    mutate(PercentageFTE = (total_all_subjects / total_year),
+           tooltip = paste0(Gender, " - ", round(PercentageFTE, 2) * 100, "% in ", Year),
+           ) %>%
+
+    ggplot(aes(y = Year, x = if_else(Gender == "male", PercentageFTE, - PercentageFTE),
+               fill = Gender, colour = Gender, text = tooltip)) +
+        geom_segment(aes(xend = 0, yend = Year), size = 1.5) + #alpha = 0.35) +
+        geom_point(aes(colour = Gender), size = 0.75) + #, alpha = 0.65) +
+        xlab("\nGender Distribution Overall") +
+        ylab(NULL) +
+        scale_x_continuous(labels = function(x) scales::percent(abs(x)), breaks = seq(-1, 1, 0.2)) +
+        #scale_shape_manual(values = c(6, 2)) + #-0x2640L, -0x2642L)) + # \u2640 and \u2642
+        scale_colour_manual(values = gender_colour_scheme) +
+        scale_fill_manual(values = gender_colour_scheme) +
+        dressCodeTheme +
+        theme(axis.text.x = element_text(size = 9, angle = 0, vjust = 0),
+              axis.text.y = element_text(size = 8),
+              panel.grid.major.y = element_blank(),
+              panel.grid.major.x = element_line(),
+              legend.title = element_blank(),
+              legend.position = "bottom")
+
+#plot1
+
+convertToPlotly(plot1, renameTraces = TRUE, regexpr = genderRegex, height = 280, width = 460, maxMargin = 1,
+                yaxis = list(tickfont = list(size = 9))
+               ) %>%
+    layout(xaxis = list(title = list(font = list(size = 14)), showline = TRUE,
+                        linecolor = "rgb(175, 175, 175)", zeroline = TRUE),
+           legend = list(y = -0.28, orientation = 'h', yanchor = "bottom", title = list(text = "")),
+           margin = list(l = 5)) %>%
+    config(displayModeBar = FALSE)
+
+
+## ---- teacher_demographics_gender_distribution_fte_computing --------
+
+plot1 <- teacher_fte_main_subject_by_gender %>%
+    filter((Gender != "all") & (SubjectGroup == "Computing")) %>%
+
+    group_by(Year) %>%
+    mutate(PercentageFTE = (TeacherFTE_Main / sum(TeacherFTE_Main, na.rm = TRUE)),
+           tooltip = paste0(Gender, " - ", round(PercentageFTE, 2) * 100, "% in ", Year),
+          ) %>%
+    ungroup() %>%
+
+    ggplot(aes(y = Year, x = if_else(Gender == "male", PercentageFTE, - PercentageFTE),
+               fill = Gender, colour = Gender, text = tooltip)) +
+        geom_segment(aes(xend = 0, yend = Year), size = 1.5) + #alpha = 0.35) +
+        geom_point(aes(colour = Gender), size = 0.75) + #, alpha = 0.65) +
+        xlab("\nGender Distribution - Computing as Main Subject") +
+        ylab(NULL) +
+        scale_x_continuous(labels = function(x) scales::percent(abs(x)), breaks = seq(-1, 1, 0.2)) +
+        #scale_shape_manual(values = c(6, 2)) + #-0x2640L, -0x2642L)) + # \u2640 and \u2642
+        scale_colour_manual(values = gender_colour_scheme) +
+        scale_fill_manual(values = gender_colour_scheme) +
+        dressCodeTheme +
+        theme(axis.text.x = element_text(size = 9, angle = 0, vjust = 0),
+              axis.text.y = element_text(size = 8),
+              panel.grid.major.y = element_blank(),
+              panel.grid.major.x = element_line(),
+              legend.title = element_blank(),
+              legend.position = "bottom")
+
+convertToPlotly(plot1, renameTraces = TRUE, regexpr = genderRegex, height = 280, width = 460, maxMargin = 1,
+                yaxis = list(tickfont = list(size = 9))
+               ) %>%
+    layout(xaxis = list(title = list(font = list(size = 14)), showline = TRUE,
+                        linecolor = "rgb(175, 175, 175)", zeroline = TRUE),
+           legend = list(y = -0.28, orientation = 'h', yanchor = "bottom", title = list(text = "")),
+           margin = list(l = 5)) %>%
+    config(displayModeBar = FALSE)
+
+
+## ---- summary_cs_teacher_fte_main_subject_by_gender --------
+
+summary_cs_teacher_fte_main_subject_by_gender <- teacher_fte_main_subject_by_gender %>%
+    filter((Gender != "all") &
+           str_detect(SubjectGroup, regex(paste0(default_focus_subject, collapse = "|"), ignore_case = TRUE))) %>%
+
+    group_by(Gender) %>%
+    mutate(across(matches("TeacherFTE"), list(median = ~ (median(., na.rm = TRUE)),
+                                              mean = ~ (mean(., na.rm = TRUE))),
+                  .names = "{.col}_{.fn}_by_gender")
+          ) %>%
+    ungroup()
+
+
+## ---- teacher_fte_main_subject_by_gender_cs_total_zoomed_in --------
+
+summary_cs_teacher_fte_main_subject_by_gender %>%
+
+    ggplot(aes(Year, TeacherFTE, colour = Gender, group = Gender, shape = Gender)) +
+        geom_point(size = 1.15) +
+        geom_line() +
+        geom_hline(aes(yintercept = TeacherFTE_median_by_gender, colour = Gender), linetype = "dashed") +
+        annotate("label",
+                 x = nth(levels(summary_cs_teacher_fte_main_subject_by_gender$Year), 2),
+                 y = unique(summary_cs_teacher_fte_main_subject_by_gender$TeacherFTE_median_by_gender),
+                 label = "median FTE",
+                 colour = gender_colour_scheme,
+                 label.size = NA # remove border
+                ) +
+        #ggtitle("\n\nTotal FTE, Computing, By Gender") +
+        ylab("Teacher FTE") +
+        xlab("") +
+        dressCodeTheme +
+        scale_colour_manual(values = gender_colour_scheme) +
+        scale_shape_manual(values = seq(6, 14)) +
+
+        theme(legend.position = c(0.95, 0.95), #"bottom",
+              legend.justification = c(1, 1),
+              legend.title = element_blank(),
+              legend.margin = margin(0, 5, 2, 5),
+              legend.background = element_rect(linewidth = 0.5, colour = "grey"),
+              axis.text.y = element_text(size = 14), # element_markdown
+              #axis.text.x = element_text(size = 14, angle = 0, vjust = 0),
+              )
+
+
+## ---- teacher_fte_main_subject_by_gender_cs_total --------
+
+summary_cs_teacher_fte_main_subject_by_gender %>%
+
+    ggplot(aes(Year, TeacherFTE, colour = Gender, group = Gender, shape = Gender)) +
+        geom_point(size = 1.15) +
+        geom_line() +
+        geom_hline(aes(yintercept = TeacherFTE_median_by_gender, colour = Gender), linetype = "dashed") +
+        #annotate("text", x = "2010", y = TeacherFTE_median_by_gender, label = "median") +
+        #ggtitle("\n\nTotal FTE, Computing, By Gender") +
+        ylab("Teacher FTE") +
+        xlab("") +
+        dressCodeTheme +
+        scale_colour_manual(values = gender_colour_scheme) +
+        scale_shape_manual(values = seq(6, 14)) +
+        scale_y_continuous(limits = c(0, max(summary_cs_teacher_fte_main_subject_by_gender$TeacherFTE, na.rm = TRUE))) +
+
+        theme(legend.position = c(0.95, 0.05), #"bottom",
+              legend.justification = c(1, 0),
+              legend.title = element_blank(),
+              legend.margin = margin(0, 5, 2, 5),
+              legend.background = element_rect(linewidth = 0.5, colour = "grey"),
+              axis.text.y = element_text(size = 14), # element_markdown
+              #axis.text.x = element_text(size = 14, angle = 0, vjust = 0),
+              )
+
+
+## ---- teacher_fte_main_subject_by_gender_cs_as_main_zoomed_in --------
+
+summary_cs_teacher_fte_main_subject_by_gender %>%
+
+    ggplot(aes(Year, TeacherFTE_Main, colour = Gender, group = Gender, shape = Gender)) +
+        geom_point(size = 1.15) +
+        geom_line() +
+        geom_hline(aes(yintercept = TeacherFTE_Main_median_by_gender, colour = Gender), linetype = "dashed") +
+        annotate("label",
+                 x = nth(levels(summary_cs_teacher_fte_main_subject_by_gender$Year), 2),
+                 y = unique(summary_cs_teacher_fte_main_subject_by_gender$TeacherFTE_Main_median_by_gender),
+                 label = "median FTE",
+                 colour = gender_colour_scheme,
+                 label.size = NA # remove border
+                ) +
+        #ggtitle("\n\nTotal FTE, Computing as Main Subject, By Gender") +
+        ylab("Teacher FTE - Main Subject") +
+        xlab("") +
+        dressCodeTheme +
+        scale_colour_manual(values = gender_colour_scheme) +
+        scale_shape_manual(values = seq(6, 14)) +
+
+        theme(legend.position = c(0.95, 0.95), #"bottom",
+              legend.justification = c(1, 1),
+              legend.title = element_blank(),
+              legend.margin = margin(0, 5, 2, 5),
+              legend.background = element_rect(linewidth = 0.5, colour = "grey"),
+              axis.text.y = element_text(size = 14), # element_markdown
+              #axis.text.x = element_text(size = 14, angle = 0, vjust = 0),
+              )
+
+
+## ---- teacher_fte_main_subject_by_gender_cs_as_main --------
+
+summary_cs_teacher_fte_main_subject_by_gender %>%
+
+    ggplot(aes(Year, TeacherFTE_Main, colour = Gender, group = Gender, shape = Gender)) +
+        geom_point(size = 1.15) +
+        geom_line() +
+        geom_hline(aes(yintercept = TeacherFTE_Main_median_by_gender, colour = Gender), linetype = "dashed") +
+        #annotate("text", x = "2010", y = TeacherFTE_Main_median_by_gender, label = "median") +
+        #ggtitle("\n\nTotal FTE, Computing as Main Subject, By Gender") +
+        ylab("Teacher FTE - Main Subject") +
+        xlab("") +
+        dressCodeTheme +
+        scale_colour_manual(values = gender_colour_scheme) +
+        scale_shape_manual(values = seq(6, 14)) +
+        scale_y_continuous(limits = c(0, max(summary_cs_teacher_fte_main_subject_by_gender$TeacherFTE, na.rm = TRUE))) +
+
+        theme(legend.position = c(0.95, 0.05), #"bottom",
+              legend.justification = c(1, 0),
+              legend.title = element_blank(),
+              legend.margin = margin(0, 5, 2, 5),
+              legend.background = element_rect(linewidth = 0.5, colour = "grey"),
+              axis.text.y = element_text(size = 14), # element_markdown
+              #axis.text.x = element_text(size = 14, angle = 0, vjust = 0),
+              )
+
+
+## ---- teacher_fte_main_subject_by_gender_cs_as_other_zoomed_in --------
+
+summary_cs_teacher_fte_main_subject_by_gender %>%
+
+    ggplot(aes(Year, TeacherFTE_Other, colour = Gender, group = Gender, shape = Gender)) +
+        geom_point(size = 1.15) +
+        geom_line() +
+        geom_hline(aes(yintercept = TeacherFTE_Other_median_by_gender, colour = Gender), linetype = "dashed") +
+        annotate("label",
+                 x = nth(levels(summary_cs_teacher_fte_main_subject_by_gender$Year), 2),
+                 y = unique(summary_cs_teacher_fte_main_subject_by_gender$TeacherFTE_Other_median_by_gender),
+                 label = "median FTE",
+                 colour = gender_colour_scheme,
+                 label.size = NA
+                ) +
+        #ggtitle("\n\nTotal FTE, Computing as Other Subject, By Gender") +
+        ylab("Teacher FTE - Other Subject") +
+        xlab("") +
+        dressCodeTheme +
+        scale_colour_manual(values = gender_colour_scheme) +
+        scale_shape_manual(values = seq(6, 14)) +
+
+        theme(legend.position = c(0.95, 0.95), #"bottom",
+              legend.justification = c(1, 1),
+              legend.title = element_blank(),
+              legend.margin = margin(0, 5, 2, 5),
+              legend.background = element_rect(linewidth = 0.5, colour = "grey"),
+              axis.text.y = element_text(size = 14), # element_markdown
+              #axis.text.x = element_text(size = 14, angle = 0, vjust = 0),
+              )
+
+
+## ---- teacher_fte_main_subject_by_gender_cs_as_other --------
+
+summary_cs_teacher_fte_main_subject_by_gender %>%
+
+    ggplot(aes(Year, TeacherFTE_Other, colour = Gender, group = Gender, shape = Gender)) +
+        geom_point(size = 1.15) +
+        geom_line() +
+        geom_hline(aes(yintercept = TeacherFTE_Other_median_by_gender, colour = Gender), linetype = "dashed") +
+        #annotate("text", x = "2010", y = TeacherFTE_Other_median_by_gender, label = "median") +
+        #ggtitle("\n\nTotal FTE, Computing as Other Subject, By Gender") +
+        ylab("Teacher FTE - Other Subject") +
+        xlab("") +
+        dressCodeTheme +
+        scale_colour_manual(values = gender_colour_scheme) +
+        scale_shape_manual(values = seq(6, 14)) +
+        scale_y_continuous(limits = c(0, max(summary_cs_teacher_fte_main_subject_by_gender$TeacherFTE, na.rm = TRUE))) +
+
+        theme(legend.position = c(0.95, 0.05), #"bottom",
+              legend.justification = c(1, 0),
+              legend.title = element_blank(),
+              legend.margin = margin(0, 5, 2, 5),
+              legend.background = element_rect(linewidth = 0.5, colour = "grey"),
+              axis.text.y = element_text(size = 14), # element_markdown
+              #axis.text.x = element_text(size = 14, angle = 0, vjust = 0),
+              )
+
+
+## ---- summary_cs_sciences_teacher_fte_main_subject_by_gender --------
+
+focus_subject_group <- "Sciences"
+
+summary_cs_sciences_teacher_fte_main_subject_by_gender <- teacher_fte_main_subject_by_gender %>%
+    filter((Gender != "all") & (SubjectGroup %in% c(focus_subject_group, "Computing"))) %>%
+    mutate(across(Subject, ~ fct_relevel(., sort(levels(.)[str_detect(levels(.),
+                                                                           regex("general", ignore_case = TRUE))]), after = Inf)),
+           across(Subject, ~ fct_drop(.)),
+          ) %>%
+
+    group_by(Gender, Subject) %>%
+    mutate(across(matches("TeacherFTE"), list(median = ~ (median(., na.rm = TRUE)),
+                                              mean = ~ (mean(., na.rm = TRUE))),
+                  .names = "{.col}_{.fn}_by_gender")
+          ) %>%
+    ungroup()
+
+
+## ---- summary_cs_sciences_teacher_fte_main_subject_by_gender_total --------
+
+summary_cs_sciences_teacher_fte_main_subject_by_gender %>%
+
+    ggplot(aes(Year, TeacherFTE, colour = Subject, group = Subject, shape = Subject, linetype = Subject)) +
+        geom_point(size = 2.15) +
+        geom_line() +
+        #geom_hline(aes(yintercept = TeacherFTE_median_by_gender, colour = Subject), linetype = "dashed") +
+        #annotate("label",
+        #         x = nth(levels(summary_cs_sciences_teacher_fte_main_subject_by_gender$Year), 2),
+        #         y = unique(summary_cs_sciences_teacher_fte_main_subject_by_gender$TeacherFTE_median_by_gender),
+        #         label = "median FTE",
+        #         colour = gender_colour_scheme,
+        #         label.size = NA # remove border
+        #        ) +
+        #ggtitle(paste("\n\nTotal FTE by Gender,", focus_subject_group, "cf. Computing")) +
+        ylab("Teacher FTE") +
+        xlab("") +
+        dressCodeTheme +
+        #scale_colour_manual(values = gender_colour_scheme) +
+        scale_colour_brewer("subject", palette = "Dark2") + #, direction = -1) +
+        #scale_linetype_manual(values = c("twodash",  "dotted")) +
+        scale_shape_manual(values = seq(6, 14)) +
+        scale_y_continuous(limits = c(0, max(summary_cs_sciences_teacher_fte_main_subject_by_gender$TeacherFTE, na.rm = TRUE))) +
+        guides(linetype = "none",
+               colour = guide_legend("title"), shape = guide_legend("title") # megre
+              ) +
+
+        theme(#legend.position = "bottom",
+              legend.title = element_blank(),
+              legend.margin = margin(0),
+              axis.text.y = element_text(size = 14), # element_markdown
+              #axis.text.x = element_text(size = 14, angle = 0, vjust = 0),
+              ) +
+        facet_grid(cols = vars(Gender))
+
+
+## ---- summary_cs_sciences_teacher_fte_main_subject_by_gender_as_main --------
+
+summary_cs_sciences_teacher_fte_main_subject_by_gender %>%
+
+    ggplot(aes(Year, TeacherFTE_Main, colour = Subject, group = Subject, shape = Subject,
+               linetype = Subject)) +
+        geom_point(size = 2.15) +
+        geom_line() +
+        #ggtitle(paste("\n\nTotal FTE by Gender, Main Subject - ", focus_subject_group, "cf. Computing")) +
+        ylab("Teacher FTE - Main Subject") +
+        xlab("") +
+        dressCodeTheme +
+        scale_colour_brewer("subject", palette = "Dark2") + #, direction = -1) +
+        scale_shape_manual(values = seq(6, 14)) +
+        scale_y_continuous(limits = c(0, max(summary_cs_sciences_teacher_fte_main_subject_by_gender$TeacherFTE, na.rm = TRUE))) +
+        guides(linetype = "none",
+               colour = guide_legend("title"), shape = guide_legend("title") # megre
+              ) +
+
+        theme(#legend.position = "bottom",
+              legend.title = element_blank(),
+              legend.margin = margin(0),
+              axis.text.y = element_text(size = 14), # element_markdown
+              #axis.text.x = element_text(size = 14, angle = 0, vjust = 0),
+              ) +
+        facet_grid(cols = vars(Gender))
+
+
+## ---- summary_cs_sciences_teacher_fte_main_subject_by_gender_as_other --------
+
+summary_cs_sciences_teacher_fte_main_subject_by_gender %>%
+
+    ggplot(aes(Year, TeacherFTE_Other, colour = Subject, group = Subject, shape = Subject,
+               linetype = Subject)) +
+        geom_point(size = 2.15) +
+        geom_line() +
+        #ggtitle(paste("\n\nTotal FTE by Gender, Other Subject - ", focus_subject_group, "cf. Computing")) +
+        ylab("Teacher FTE - Other Subject") +
+        xlab("") +
+        dressCodeTheme +
+        scale_colour_brewer("subject", palette = "Dark2") + #, direction = -1) +
+        scale_shape_manual(values = seq(6, 14)) +
+        scale_y_continuous(limits = c(0, max(summary_cs_sciences_teacher_fte_main_subject_by_gender$TeacherFTE, na.rm = TRUE))) +
+        guides(linetype = "none",
+               colour = guide_legend("title"), shape = guide_legend("title") # megre
+              ) +
+
+        theme(#legend.position = "bottom",
+              legend.title = element_blank(),
+              legend.margin = margin(0),
+              axis.text.y = element_text(size = 14), # element_markdown
+              #axis.text.x = element_text(size = 14, angle = 0, vjust = 0),
+              ) +
+        facet_grid(cols = vars(Gender))
+
+
+## ---- summary_cs_sciences_teacher_fte_main_subject_by_gender_as_other_excl_generaj_science --------
+
+summary_cs_sciences_teacher_fte_main_subject_by_gender %>%
+    filter(!(str_detect(Subject, "General") & str_detect(Subject, "Science"))) %>%
+    mutate(across(Subject, ~ fct_drop(.))) %>%
+
+    ggplot(aes(Year, TeacherFTE_Other, colour = Subject, group = Subject, shape = Subject,
+               linetype = Subject)) +
+        geom_point(size = 2.15) +
+        geom_line() +
+        #ggtitle(paste("\n\nTotal FTE by Gender, Other Subject - ", focus_subject_group, "(excl. General Science) cf. Computing")) +
+        ylab("Teacher FTE - Other Subject") +
+        xlab("") +
+        dressCodeTheme +
+        scale_colour_brewer("subject", palette = "Dark2") + #, direction = -1
+        #scale_colour_manual(values = colorRampPalette(colour("bamako", force = TRUE)(15))(5)) +
+        #scale_colour_manual(values = viridis::magma(15)) +
+        #scale_colour_manual(values = colour("muted", force = TRUE)(8)) +
+        #khroma::scale_colour_romaO(discrete = TRUE) +
+        scale_shape_manual(values = seq(6, 14)) +
+        scale_y_continuous(limits = c(0, max(subset(summary_cs_sciences_teacher_fte_main_subject_by_gender,
+                                                    !(str_detect(Subject, "General") & str_detect(Subject, "Science"))
+                                                   )$TeacherFTE_Other, na.rm = TRUE))) +
+        guides(linetype = "none",
+               colour = guide_legend("title"), shape = guide_legend("title") # megre
+              ) +
+
+        theme(#legend.position = "bottom",
+              legend.title = element_blank(),
+              legend.margin = margin(0),
+              axis.text.y = element_text(size = 14), # element_markdown
+              #axis.text.x = element_text(size = 14, angle = 0, vjust = 0),
+              ) +
+        facet_grid(cols = vars(Gender))
+
+
+## ----  --------
 ## ----  --------
 
+
+## ---- summary_tables_gender_distribution_teacher_fte_overall --------
+
+teacher_fte_main_subject_by_gender %>%
+    filter(Gender != "all") %>%
+
+    group_by(Gender) %>%
+    summarise(total_FTE = sum(TeacherFTE)) %>%
+
+    ungroup() %>%
+    summarise(` ` = Gender,
+              `Total Teacher FTE` = (total_FTE / sum(total_FTE))
+              ) %>%
+    mutate(across(where(is.numeric), ~ scales::percent(., accuracy = 0.1, scale = 100))) %>%
+
+    kable(align = "lc") %>% #caption = "\nGender distribution overall") %>%
+    kable_paper("striped", full_width = FALSE, position = "left")
+
+
+## ---- summary_tables_gender_distribution_teacher_fte_computing --------
+
+teacher_fte_main_subject_by_gender %>%
+    filter((Gender != "all") & (SubjectGroup == "Computing")) %>%
+
+    group_by(Gender) %>%
+        summarise(total_FTE_Main = sum(TeacherFTE_Main),
+              total_FTE_Other = sum(TeacherFTE_Other),
+              total_FTE = sum(TeacherFTE),
+             ) %>%
+
+    ungroup() %>%
+    summarise(` ` = Gender,
+              `As Main Subject` = (total_FTE_Main / sum(total_FTE_Main)),
+              `As Other Subject` = (total_FTE_Other / sum(total_FTE_Other)),
+              `Total FTE` = (total_FTE / sum(total_FTE))
+              ) %>%
+    mutate(across(where(is.numeric), ~ scales::percent(., accuracy = 0.1, scale = 100))) %>%
+
+    kable(align = "lccc") %>% #caption = "\nGender distribution - Computing only") %>%
+    kable_paper("striped", full_width = FALSE, position = "left")
+
+
+
+## ----  --------
 
 
 

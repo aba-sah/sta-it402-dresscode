@@ -531,7 +531,7 @@ createSubjectGroups <-
 getEducationAuthority <-
     function(local_authority, authorities) {
       
-        if (is.na(local_authority))
+        if (is.na(local_authority) | !(local_authority %in% authorities$LocalAuthority))
             return(NA)
         
         row_number <- which(local_authority == deframe(authorities["LocalAuthority"]))

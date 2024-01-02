@@ -2,7 +2,7 @@ library(lubridate)
 
 library(khroma)
 library(plotly)
-library(crosstalk)
+#library(crosstalk)
 
 
 weekdaysAbbrevRegex <- paste0(levels(wday(1, label = TRUE)), collapse = "|")
@@ -80,8 +80,8 @@ convertToPlotly <-
             
 
         plot_tmp <- ggplotly(ggPlot, tooltip = tooltip, height = height, width = width) %>%
-            partial_bundle() %>%        
-
+            #partial_bundle(local = FALSE) %>%
+            
             style(hoveron = "points", hoverinfo = "text", hoverlabel = list(bgcolor = "white")) %>%
             layout(xaxis = xaxis, yaxis = yaxis, legend = legend,
                    title = list(font = list(size = 20)),
@@ -141,3 +141,34 @@ create_plotly_geom_vline <- function(x = 0, colour = "red", width = 1, linetype 
          line = list(color = colour, width = width, dash = linetype)
     )
 }
+
+
+###
+# adapted from https://www.timlrx.com/blog/speeding-up-r-plotly-webapps-r-x-javascript#fnref2
+###
+mapToPlotlyBasicCDN <- function(plot, plotly_basic_cdn_url_current = NULL) {
+
+    if (is_null(plotly_basic_cdn_url_current)) {
+        if (exists("plotly_basic_cdn_url") && !is_null(plotly_basic_cdn_url))
+            plotly_basic_cdn_url_current <- plotly_basic_cdn_url
+        else
+            plotly_basic_cdn_url_current <- "https://cdn.plot.ly/plotly-basic-2.8.3.min.js" # as at Jan 2022
+    }
+
+    dependencies <- plot$dependencies
+    dependencies_urls <- purrr::map(
+    
+        dependencies,
+        ~if(.x$name == "plotly-basic") {
+            .x$src = list(file = getwd())
+            .x$script = document.write(paste0('<script src="', plotly_basic_cdn_url_current, '" type="text/javascript"></script>'))
+            .x
+        } else
+            .x
+    
+    )
+    plot$dependencies <- dependencies_urls
+
+    return(plot)
+}
+

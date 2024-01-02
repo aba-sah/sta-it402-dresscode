@@ -3,28 +3,26 @@ library(scales)
 
 library(DBI)
 
+
 formatNumber <-
     function(value, accuracy = NULL) {
-        
+ 
         if (is.na(value) || (value == -Inf) || (value == Inf))
             return(value)
 
-        if (value < 1e6)
-            return(scales::comma(value))
-        
-        # else  ...
         if (is.null(accuracy)) {
             accuracy <- 0.001
             
-        } else if (accuracy == -1)
+        } else if (accuracy == -1) # need to check null first or will throw an error
             accuracy <- NULL
 
-        value <- scales::label_number_si(accuracy = accuracy)(value)
-
-        # know there's a more efficient way to do this, need to get the regex right for the final lookahead
-        if (str_detect(value, "\\.[0]+\\D"))
-            value <- str_remove(value, "\\.[0]+")
+        if (value < 1e6)
+            return(scales::comma(value, accuracy = accuracy, drop0trailing = TRUE))
         
+        # else  ...
+        value <- scales::label_number(accuracy = accuracy,
+                                      scale_cut = cut_short_scale(),
+                                      drop0trailing = TRUE)(value)
 
         return(value)
     }

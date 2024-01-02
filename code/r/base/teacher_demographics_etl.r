@@ -59,10 +59,32 @@ teacher_fte_main_subject_by_gender <- dbGetQuery(dbConn, paste("SELECT DISTINCT 
                                                                                        regex("computing", ignore_case = TRUE))]))),
           )
 
+teacher_fte_main_subject_by_gender <- teacher_fte_main_subject_by_gender %>%
+    filter(Gender != "all") %>%
+
+    rowwise() %>%
+    mutate(TeacherFTE = sum(across(matches("TeacherFTE_\\w+")), na.rm = TRUE)) %>%
+
+    group_by(Year, Gender) %>%
+    mutate(across(TeacherFTE, list(median = median, mean = mean, total = sum), .names = "{.fn}_all_subjects")) %>%
+
+
+    bind_rows(teacher_fte_main_subject_by_gender %>%
+                filter(Gender == "all") %>%
+
+                rowwise() %>%
+                mutate(TeacherFTE = sum(across(matches("TeacherFTE_\\w+")), na.rm = TRUE)) %>%
+
+                group_by(Year) %>%
+                mutate(across(TeacherFTE, list(median = median, mean = mean, total = sum), .names = "{.fn}_all_subjects"))
+    ) %>%
+    ungroup() %>%
+    arrange(Year)
+
 
 distribution_teacher_age <- dbGetQuery(dbConn, "SELECT * FROM distribution_teacher_age") %>%
 
     mutate(across(c(Age, Year), as.ordered)
           )
           
-#dbDisconnect(dbConn)
+dbDisconnect(dbConn)

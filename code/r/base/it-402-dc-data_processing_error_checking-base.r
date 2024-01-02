@@ -66,7 +66,7 @@ checkDataAsPercentageOnly <-
 
 #TODO -include NotKnown and NA
 
-checkDistributionByGenderErrors <- 
+checkDistributionByGenderErrors <-
     function(awardFile, glimpseContent = FALSE) {
         awardData <- read_csv(awardFile, trim_ws = TRUE) %>% #, skip_empty_rows = T) # NOT skipping empty rows... :(
                             filter(rowSums(is.na(.)) != ncol(.)) %>%
@@ -76,26 +76,32 @@ checkDistributionByGenderErrors <-
         if (glimpseContent)
             print(glimpse(awardData))
 
+            
+        # may need to force conversion to numerical ...
+        awardData <- awardData %>%
+            mutate(across(!matches("subject"), as.numeric)) %>%
+            suppressWarnings()
+
         
         if (awardData %>%
                 select(matches(gender_options)) %>%
                 verify(ncol(.) > 0, error_fun = just_warn) %>%
 
-                summarise(data_as_counts = (ncol(.) == 0)) == TRUE) { 
+                summarise(data_as_counts = (ncol(.) == 0)) == TRUE) {
             
             awardData <- awardData %>%
                 select(- any_of("NumberOfCentres")) %>%
                 pivot_longer(!c(Subject), names_to = "grade", values_to = "PercentageOfStudents") %>%
                 separate("grade", c("gender", "grade"), extra = "merge") %>%
                 mutate_at(c("gender", "grade"), as.factor) %>%
-                filter((gender %in% c("all")) & (grade %in% c("Entries"))) 
+                filter((gender %in% c("all")) & (grade %in% c("Entries")))
         
             # building parallel structure
             return(awardData %>%
-                       group_by(Subject) %>%            
+                       group_by(Subject) %>%
                        mutate(total = -1) %>%
                        summarise(total = sum(total)) %>%
-                       mutate(DataError = TRUE) # confirmation only - comment out to print al            
+                       mutate(DataError = TRUE) # confirmation only - comment out to print al
             )
         }
         
@@ -136,7 +142,6 @@ checkDistributionByGenderErrors <-
                 select(Subject, ends_with("-percentage")) %>%
                 mutate_at(vars(ends_with("-percentage")), ~(. / 100)) %>%
 
-
                 pivot_longer(!c(Subject), names_to = "grade", values_to = "PercentageOfStudents") %>%
                 separate("grade", c("gender", "grade"), extra = "merge") %>%
                 mutate_at(c("gender", "grade"), as.factor)
@@ -148,13 +153,14 @@ checkDistributionByGenderErrors <-
 
             group_by(Subject) %>%
             summarise(total = sum(PercentageOfStudents, na.rm = TRUE)) %>%
-            verify((total == 1.0) | (total == 0), error_fun = just_warn) %>% 
+            verify((total == 1.0) | (total == 0), error_fun = just_warn) %>%
 
             mutate(DataError = if_else(((total == 1.0) | (total == 0)), FALSE, TRUE)) %>%
             filter(DataError == TRUE) %>% # confirmation only - comment out to print all
             suppressMessages # ungrouping messages
 
 }
+
 
 
  
