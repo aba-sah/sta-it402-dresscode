@@ -196,7 +196,7 @@ Overview
 
 ## When is Computing Offered?
 
-```{r, computing_offering_across_qualifications, fig.height = 2.8}
+```{r, computing_offering_across_qualifications, fig.height = 3}
 ```
 
 
@@ -206,22 +206,27 @@ Gender Distribution {data-navmenu="Exploring the Data&nbsp;&ndash;&nbsp;Pupils"}
 Row {data-height=100}
 -----------------------------------------------------------------------
 
-> Change over time &ndash; __gender distribution__ across all subjects and qualifications, compared to gender distribution for computing subjects only. (Mouse over the edge of each line for percentages.)
+> Change over time &ndash; __gender distribution__ uptake across all subjects and qualifications, compared to gender distribution for computing subjects only.
+<!-- (Mouse over the edge of each line for percentages.) -->
 
 Column
 -----------------------------------------------------------------------
 
-### All Subjects {data-height=600}
+### Pupil Uptake &ndash; All Subjects {data-height=600}
 
 
-```{r, gender_distribution_static_charts_overall, fig.height = 6.5}
+```{r, gender_distribution_static_charts_overall }
+
+```{r, gender_distribution_overall, fig.height = 6.5}
 
 # gender_distribution_overall}
 ```
 
-### Computing {data-height=600}
+### Pupil Uptake &ndash; Computing {data-height=600}
 
-```{r, gender_distribution_static_charts_computing, fig.height = 6.5}
+```{r, gender_distribution_static_charts_computing }
+
+```{r, gender_distribution_computing, fig.height = 6.5}
 
 # gender_distribution_computing}
 ```
@@ -368,19 +373,6 @@ Row {.tabset .tabset-fade}
 </div>
 
 
-Variation across Locations {data-navmenu="Exploring the Data&nbsp;&ndash;&nbsp;Pupils"}
-=======================================================================
-
-Row {.tabset .tabset-fade}
------------------------------------------------------------------------
-
-### By Year
-
-### Changes ...
-
-```{r}
-
-```
 
 
 
@@ -388,10 +380,52 @@ Row {.tabset .tabset-fade}
 Gender Distribution {data-navmenu="Exploring the Data&nbsp;&ndash;&nbsp;Teachers"}
 =======================================================================
 
-Row {.tabset .tabset-fade}
+Row {data-height=60}
 -----------------------------------------------------------------------
 
-### Overall
+> Change over time &ndash; __gender distribution__ teacher FTE (full time equivalent) across all subjects, compared to gender distribution for computing subjects only.
+
+
+Row {data-height=60}
+-----------------------------------------------------------------------
+```{=html}
+<p>&nbsp;<br />
+
+  <a href = "sta_it_402_dress_code_teacher_demographics.html" target = "_blank">Further detail on teacher demographics ...</a>
+<!-- (Mouse over the edge of each line for percentages.) -->
+
+```
+
+Column
+-----------------------------------------------------------------------
+
+### Teacher FTE &ndash; All Subjects {data-height=600}
+
+
+```{r, teacher_demographics_gender_distribution_fte_overall, fig.height = 3.2}
+
+# gender_distribution_teacher_fte_overall}
+```
+
+### Teacher FTE &ndash; Computing as Main Subject {data-height=600}
+
+```{r, teacher_demographics_gender_distribution_fte_computing, fig.height = 3.2}
+
+# gender_distribution_teacher_fte_computing}
+```
+
+Column
+-----------------------------------------------------------------------
+
+### Average gender distribution over time
+
+```{r, summary_tables_gender_distribution_teacher_fte_overall}
+```
+
+### Average gender distribution, computing only
+
+```{r, summary_tables_gender_distribution_teacher_fte_computing}
+```
 
 
 ```{r}

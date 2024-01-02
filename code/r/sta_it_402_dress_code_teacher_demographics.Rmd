@@ -3,7 +3,7 @@ title: "STA DressCode - Teacher Demographics"
 output: 
   flexdashboard::flex_dashboard:
     orientation: rows
-    vertical_layout: fill
+    vertical_layout: scroll
     theme: bootstrap
     social: menu
  #   source_code: embed
@@ -60,6 +60,7 @@ knitr::opts_chunk$set(out.width = '95%', fig.align = 'center',
 #library(ggtext)
 #library(DBI)
 
+#library(RColorBrewer)
 #library(plotly)
 
 library(knitr)
@@ -106,10 +107,121 @@ Overview
 ```
 
 
+Teacher FTE &ndash; Computing {data-navmenu="Gender Distribution"}
+=======================================================================
+
+
+```{r, summary_cs_teacher_fte_main_subject_by_gender}
+```
+
+
+Row {data-height=280}
+-------------------------------------
+
+### Total Teacher FTE by Gender, Computing
+
+```{r, teacher_fte_main_subject_by_gender_cs_total, fig.height = 5, fig.width = 8}
+```
+
+### Total Teacher FTE by Gender, Computing
+
+```{r, teacher_fte_main_subject_by_gender_cs_total_zoomed_in, fig.height = 5, fig.width = 8}
+```
+
+
+Row {data-height=280}
+-------------------------------------
+
+### Teacher FTE by Gender, Computing as Main Subject
+
+```{r, teacher_fte_main_subject_by_gender_cs_as_main, fig.height = 5, fig.width = 8}
+```
+
+### Teacher FTE by Gender, Computing as Main Subject
+
+```{r, teacher_fte_main_subject_by_gender_cs_as_main_zoomed_in, fig.height = 5, fig.width = 8}
+```
+
+
+Row {data-height=280}
+-------------------------------------
+
+### Teacher FTE by Gender, Computing as Other Subject
+
+```{r, teacher_fte_main_subject_by_gender_cs_as_other, fig.height = 5, fig.width = 8}
+```
+
+### Teacher FTE by Gender, Computing as Other Subject
+
+```{r, teacher_fte_main_subject_by_gender_cs_as_other_zoomed_in, fig.height = 5, fig.width = 8}
+```
+
+
+
+```{r clean_up_summary_cs_teacher_fte_main_subject_by_gender }
+
+rm(summary_cs_teacher_fte_main_subject_by_gender)
+
+```
+
+
+
+Teacher FTE &ndash; Computing cf. Sciences {data-navmenu="Gender Distribution"}
+=======================================================================
+
+
+```{r, summary_cs_sciences_teacher_fte_main_subject_by_gender}
+```
+
+
+Row {data-height=280}
+-------------------------------------
+
+### Total Teacher FTE by Gender, Sciences cf. Computing
+
+```{r, summary_cs_sciences_teacher_fte_main_subject_by_gender_total, fig.height = 4.5, fig.width = 14}
+```
+
+
+Row {data-height=280}
+-------------------------------------
+
+### Teacher FTE by Gender, as Main Subject &ndash; Sciences cf. Computing
+
+```{r, summary_cs_sciences_teacher_fte_main_subject_by_gender_as_main, fig.height = 4.5, fig.width = 14}
+```
+
+
+Row {data-height=280}
+-------------------------------------
+
+### Teacher FTE by Gender, as Other Subject &ndash; Sciences cf. Computing
+
+```{r, summary_cs_sciences_teacher_fte_main_subject_by_gender_as_other, fig.height = 4.5, fig.width = 14}
+```
+
+
+Row {data-height=280}
+-------------------------------------
+
+### Teacher FTE by Gender, as Other Subject &ndash; Sciences (excl. General Science) cf. Computing
+
+```{r, summary_cs_sciences_teacher_fte_main_subject_by_gender_as_other_excl_generaj_science, fig.height = 4.5, fig.width = 14}
+```
+
+
+```{r clean_up_summary_cs_sciences_teacher_fte_main_subject_by_gender }
+
+rm(summary_cs_sciences_teacher_fte_main_subject_by_gender, focus_subject_group)
+
+```
+
+
+
 Teacher FTE {data-navmenu="Change in Age Distribution"}
 =======================================================================
 
-Row {.tabset .tabset-fade}
+Column
 -------------------------------------
 
 ### Teacher Age Ranges
