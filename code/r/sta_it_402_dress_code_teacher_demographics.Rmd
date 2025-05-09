@@ -107,7 +107,7 @@ Overview
 ```
 
 
-Teacher FTE &ndash; Computing {data-navmenu="Gender Distribution"}
+FTE &ndash; Computing {data-navmenu="Gender Distribution"}
 =======================================================================
 
 
@@ -166,7 +166,7 @@ rm(summary_cs_teacher_fte_main_subject_by_gender)
 
 
 
-Teacher FTE &ndash; Computing cf. Sciences {data-navmenu="Gender Distribution"}
+FTE &ndash; Computing cf. Sciences {data-navmenu="Gender Distribution"}
 =======================================================================
 
 
@@ -177,7 +177,7 @@ Teacher FTE &ndash; Computing cf. Sciences {data-navmenu="Gender Distribution"}
 Row {data-height=280}
 -------------------------------------
 
-### Total Teacher FTE by Gender, Sciences cf. Computing
+### Total Teacher FTE by Gender, Computing cf. Sciences
 
 ```{r, summary_cs_sciences_teacher_fte_main_subject_by_gender_total, fig.height = 4.5, fig.width = 14}
 ```
@@ -186,7 +186,7 @@ Row {data-height=280}
 Row {data-height=280}
 -------------------------------------
 
-### Teacher FTE by Gender, as Main Subject &ndash; Sciences cf. Computing
+### Teacher FTE by Gender, as Main Subject &ndash; Computing cf. Sciences
 
 ```{r, summary_cs_sciences_teacher_fte_main_subject_by_gender_as_main, fig.height = 4.5, fig.width = 14}
 ```
@@ -195,7 +195,7 @@ Row {data-height=280}
 Row {data-height=280}
 -------------------------------------
 
-### Teacher FTE by Gender, as Other Subject &ndash; Sciences cf. Computing
+### Teacher FTE by Gender, as Other Subject &ndash; Computing cf. Sciences
 
 ```{r, summary_cs_sciences_teacher_fte_main_subject_by_gender_as_other, fig.height = 4.5, fig.width = 14}
 ```
@@ -204,7 +204,7 @@ Row {data-height=280}
 Row {data-height=280}
 -------------------------------------
 
-### Teacher FTE by Gender, as Other Subject &ndash; Sciences (excl. General Science) cf. Computing
+### Teacher FTE by Gender, as Other Subject &ndash; Computing cf. Sciences (excl. General Science)
 
 ```{r, summary_cs_sciences_teacher_fte_main_subject_by_gender_as_other_excl_generaj_science, fig.height = 4.5, fig.width = 14}
 ```
@@ -215,6 +215,161 @@ Row {data-height=280}
 rm(summary_cs_sciences_teacher_fte_main_subject_by_gender, focus_subject_group)
 
 ```
+
+
+
+FTE &ndash; Computing cf. Selected Languages {data-navmenu="Gender Distribution"}
+=======================================================================
+
+
+```{r, summary_cs_languages_teacher_fte_main_subject_by_gender}
+```
+
+
+Row {data-height=280}
+-------------------------------------
+
+### Total Teacher FTE by Gender, Computing cf. Languages
+
+```{r, summary_cs_languages_teacher_fte_main_subject_by_gender_total, fig.height = 4.5, fig.width = 14}
+```
+
+
+Row {data-height=280}
+-------------------------------------
+
+### Teacher FTE by Gender, as Main Subject &ndash; Computing cf. Languages
+
+```{r, summary_cs_languages_teacher_fte_main_subject_by_gender_as_main, fig.height = 4.5, fig.width = 14}
+```
+
+
+Row {data-height=280}
+-------------------------------------
+
+### Teacher FTE by Gender, as Other Subject &ndash; Computing cf. Languages
+
+```{r, summary_cs_languages_teacher_fte_main_subject_by_gender_as_other, fig.height = 4.5, fig.width = 14}
+```
+
+
+
+```{r clean_up_summary_cs_languages_teacher_fte_main_subject_by_gender }
+
+rm(summary_cs_languages_teacher_fte_main_subject_by_gender, focus_subject_group)
+
+```
+
+
+
+FTE &ndash; Computing cf. Business Studies {data-navmenu="Gender Distribution"}
+=======================================================================
+
+
+```{r, summary_cs_business_teacher_fte_main_subject_by_gender}
+```
+
+
+Row {data-height=280}
+-------------------------------------
+
+### Total Teacher FTE by Gender, Computing cf. Business Studies
+
+```{r, summary_cs_business_teacher_fte_main_subject_by_gender_total, fig.height = 4.5, fig.width = 14}
+```
+
+
+Row {data-height=280}
+-------------------------------------
+
+### Teacher FTE by Gender, as Main Subject &ndash; Computing cf. Business Studies
+
+```{r, summary_cs_business_teacher_fte_main_subject_by_gender_as_main, fig.height = 4.5, fig.width = 14}
+```
+
+
+Row {data-height=280}
+-------------------------------------
+
+### Teacher FTE by Gender, as Other Subject &ndash; Computing cf. Business Studies
+
+```{r, summary_cs_business_teacher_fte_main_subject_by_gender_as_other, fig.height = 4.5, fig.width = 14}
+```
+
+
+
+```{r clean_up_summary_cs_business_teacher_fte_main_subject_by_gender }
+
+rm(summary_cs_business_teacher_fte_main_subject_by_gender, focus_subject_group)
+
+```
+
+
+FTE &ndash; Computing cf. Sciences {data-navmenu="Gender Distribution II"}
+=======================================================================
+
+
+```{r, gender_distribution_focus_subjects_teacher_fte}
+```
+
+```{r, gender_distribution_computing_cf_sciences_teacher_fte}
+
+```
+Column {data-width=200}
+-------------------------------------
+
+### Teacher FTE by Gender, Computing
+
+<div class="medium_image">
+
+`r plots_cf_sciences[[1]] `
+
+</div>
+
+Column {data-width=200}
+-------------------------------------
+
+### Teacher FTE by Gender, Biology
+
+<div class="medium_image">
+
+`r plots_cf_sciences[[2]] `
+
+</div>
+
+Column {data-width=200}
+-------------------------------------
+
+### Teacher FTE by Gender, Chemistry
+
+<div class="medium_image">
+
+`r plots_cf_sciences[[3]] `
+
+</div>
+
+Column {data-width=200}
+-------------------------------------
+
+### Teacher FTE by Gender, Physics
+
+<div class="medium_image">
+
+`r plots_cf_sciences[[4]] `
+
+</div>
+
+
+FTE &ndash; Computing cf. Selected Languages {data-navmenu="Gender Distribution II"}
+=======================================================================
+
+
+```{r clean_up_gender_distribution_focus_subjects_teacher_fte }
+
+rm(gender_distribution_focus_subjects_teacher_fte, plots_cf_sciences)
+
+```
+
 
 
 
@@ -271,7 +426,7 @@ Column
 
 
 
-Computing Compared to Selected Subjects I {data-navmenu="FTE&nbsp;&ndash;&nbsp;Subject Comparison"}
+FTE &ndash; Computing Compared to Selected Subjects I {data-navmenu="Subject Comparison"}
 =======================================================================
 
 Column
@@ -289,7 +444,7 @@ Column
 ```
 
 
-Computing Compared to Selected Subjects II {data-navmenu="FTE&nbsp;&ndash;&nbsp;Subject Comparison"}
+FTE &ndash; Computing Compared to Selected Subjects II {data-navmenu="Subject Comparison"}
 =======================================================================
 
 Column
@@ -308,7 +463,7 @@ Column
 
 
 
-Computing Compared to Selected Subjects III {data-navmenu="FTE&nbsp;&ndash;&nbsp;Subject Comparison"}
+FTE &ndash; Computing Compared to Selected Subjects III {data-navmenu="Subject Comparison"}
 =======================================================================
 
 Column
@@ -327,7 +482,7 @@ Column
 
 
 
-Age Distribution {data-navmenu="FTE&nbsp;&ndash;&nbsp;Subject Comparison"}
+FTE &ndash; Age Distribution {data-navmenu="Subject Comparison"}
 =======================================================================
 
 Row {.tabset .tabset-fade}
@@ -346,7 +501,7 @@ Row {.tabset .tabset-fade}
 
 
 
-Age Distribution over Time {data-navmenu="FTE&nbsp;&ndash;&nbsp;Subject Comparison"}
+FTE &ndash; Age Distribution over Time {data-navmenu="Subject Comparison"}
 =======================================================================
 
 Row {.tabset .tabset-fade}
@@ -364,6 +519,53 @@ Row {.tabset .tabset-fade}
 ```
 
 
+
+Targets vs. Intake {data-navmenu="Initial Teacher Education"}
+=======================================================================
+
+Column
+-------------------------------------
+
+### Summary &ndash; PGDE and Other Routes
+
+```{r, teachers_initial_intake_pgde_secondary_and_alt_routes_overview, fig.height = 8, fig.width = 14}
+```
+
+
+### Summary &ndash; University
+
+```{r, teachers_initial_intake_university_overview, fig.height = 8, fig.width = 14}
+```
+
+
+
+Subject Breakdown - PGDE &amp; Alt. Routes {data-navmenu="Initial Teacher Education"}
+=======================================================================
+
+Column
+-----------------------------------------------------------------------
+
+### PGDE and Other Routes
+
+```{r, teachers_initial_intake_pgde_secondary_and_alt_routes_by_subject, fig.height = 8, fig.width = 20}
+```
+
+
+
+Award Breakdown - University {data-navmenu="Initial Teacher Education"}
+=======================================================================
+
+Column
+-----------------------------------------------------------------------
+
+### University
+
+```{r, teachers_initial_intake_university_by_award, fig.height = 8, fig.width = 20}
+```
+
+
+
+
 About
 =======================================================================
 
@@ -373,6 +575,8 @@ About
 
 <a href = "https://www.gov.scot/publications/teacher-census-supplementary-statistics" target = "_blank"> Teacher census data</a> was obtained from the Scottish Govt Open Data Portal.
 
+<p>Initial teacher education intake data was obtained from the <a href = "https://www.gov.scot/groups/teacher-workforce-planning-advisory-group/" target = "_blank">Teacher Workforce Planning Advisory Group</a> publications in the Scottish Govt Open Data Portal.
+</p>
 
 ```
 
