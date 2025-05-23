@@ -545,7 +545,7 @@ Subject Breakdown - PGDE &amp; Alt. Routes {data-navmenu="Initial Teacher Educat
 Column
 -----------------------------------------------------------------------
 
-### PGDE and Other Routes
+### PGDE and Other Routes &mdash; Comparision of SFC Targets to Actual Intake, by Subject
 
 ```{r, teachers_initial_intake_pgde_secondary_and_alt_routes_by_subject, fig.height = 8, fig.width = 20}
 ```
@@ -558,9 +558,9 @@ Award Breakdown - University {data-navmenu="Initial Teacher Education"}
 Column
 -----------------------------------------------------------------------
 
-### University
+### University &mdash; Comparision of SFC Targets to Actual Intake, by Award
 
-```{r, teachers_initial_intake_university_by_award, fig.height = 8, fig.width = 20}
+```{r, teachers_initial_intake_university_by_award, fig.height = 7, fig.width = 20}
 ```
 
 
