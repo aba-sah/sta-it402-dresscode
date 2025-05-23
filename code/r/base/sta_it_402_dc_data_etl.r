@@ -346,3 +346,28 @@ teacher_fte_main_subject_by_gender <- teacher_fte_main_subject_by_gender %>%
 ##
 
 
+### ###
+##
+# initial teacher intake - PGDE et al.
+##
+
+teachers_initial_intake_pgde_secondary_and_alt_routes <- dbGetQuery(dbConn, "SELECT * FROM teachers_initial_intake_pgde_secondary_and_alt_routes")
+
+
+##
+#
+##
+
+
+### ###
+##
+# initial teacher intake - university
+##
+
+teachers_initial_intake_university <- dbGetQuery(dbConn, "SELECT * FROM teachers_initial_intake_university") 
+
+##
+#
+##
+
+

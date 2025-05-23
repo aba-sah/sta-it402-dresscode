@@ -19,8 +19,8 @@ genderRegex <- paste0(gender_options_formatted, collapse = "|")
 
 # initially restricted to it-402dc, but now shared across all,along with other potentially reusable vars
 # colour-blind safe - see https://cran.r-project.org/web/packages/khroma/vignettes/tol.html
-gender_colour_scheme <- c("female" = as.character(colour("muted")(7)["wine"]),
-                          "male" = as.character(colour("muted")(7)["green"]))
+gender_colour_scheme <- c("female" = as.character(colour("muted")(7)[6]),  # ["wine"] - labels no longer working (2025 update?)
+                          "male" = as.character(colour("muted")(7)[4])) # "green"]
 gender_shape_icons <- c("female" = -0x2640L, "male" = -0x2642L) # \u2640 and \u2642 )
 
 weather_metrics <- c("min_temp", "mean_temp", "max_temp", "rainfall")

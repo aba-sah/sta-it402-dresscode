@@ -34,7 +34,7 @@ computing_offering_all_qualifications %>%
 
 plot1 <- gender_distribution %>%
 
-    group_by(year, gender) %>%
+    group_by(year, gender) %>% *** update sum/mean ... etc.
     summarise(across(NoOfStudents, list(median = median, mean = mean, NoOfStudents = sum), na.rm = TRUE, .names = "{.fn}"),
               AllEntries = sum(AllEntries, na.rm = TRUE),
               PercentageOfStudents = (NoOfStudents / AllEntries)
@@ -1082,10 +1082,10 @@ distribution_teacher_age  %>%
                                 values = c("Average" = 4, "Median" = 2, "Minimum" = 3, "Maximum" = 3),
                                 labels = c("Average", "Median", "Minimum", "Maximum")) +
         scale_colour_manual("Teacher Age",
-                                values = c("Average" = as.character(color("high contrast")(3)["red"]),
-                                           "Median" = as.character(color("high contrast")(3)["blue"]),
-                                           "Minimum" = as.character(color("vibrant")(7)["cyan"]),
-                                           "Maximum" = as.character(color("vibrant")(7)["cyan"])),
+                                values = c("Average" = as.character(color("high contrast")(3)[3]), #["red"]),
+                                           "Median" = as.character(color("high contrast")(3)[1]), #["blue"]),
+                                           "Minimum" = as.character(color("vibrant")(7)[3]), #["cyan"]),
+                                           "Maximum" = as.character(color("vibrant")(7)[3])), #["cyan"])),
                                 labels = c("Average", "Median", "Minimum", "Maximum")) +
 
 
@@ -1117,8 +1117,8 @@ distribution_teacher_age  %>%
                                 values = c("Average" = 4, "Median" = 2),
                                 labels = c("Average", "Median")) +
         scale_colour_manual("Teacher Age",
-                                values = c("Average" = as.character(color("high contrast")(3)["red"]),
-                                           "Median" = as.character(color("high contrast")(3)["blue"])
+                                values = c("Average" = as.character(color("high contrast")(3)[3]), #["red"]),
+                                           "Median" = as.character(color("high contrast")(3)[3]) #["blue"])
                                            ),
                                 labels = c("Average", "Median")) +
 
@@ -1917,7 +1917,8 @@ summary_cs_sciences_teacher_fte_main_subject_by_gender <- teacher_fte_main_subje
                                               mean = ~ (mean(., na.rm = TRUE))),
                   .names = "{.col}_{.fn}_by_gender")
           ) %>%
-    ungroup()
+    ungroup() %>%
+    mutate(across(Subject, ~ fct_drop(.)))
 
 
 ## ---- summary_cs_sciences_teacher_fte_main_subject_by_gender_total --------
@@ -2017,8 +2018,7 @@ summary_cs_sciences_teacher_fte_main_subject_by_gender %>%
 
 summary_cs_sciences_teacher_fte_main_subject_by_gender %>%
     filter(!(str_detect(Subject, "General") & str_detect(Subject, "Science"))) %>%
-    mutate(across(Subject, ~ fct_drop(.))) %>%
-
+    
     ggplot(aes(Year, TeacherFTE_Other, colour = Subject, group = Subject, shape = Subject,
                linetype = Subject)) +
         geom_point(size = 2.15) +
@@ -2049,7 +2049,303 @@ summary_cs_sciences_teacher_fte_main_subject_by_gender %>%
         facet_grid(cols = vars(Gender))
 
 
-## ----  --------
+
+## ---- summary_cs_languages_teacher_fte_main_subject_by_gender --------
+
+summary_cs_languages_teacher_fte_main_subject_by_gender <- teacher_fte_main_subject_by_gender %>%
+    filter((Gender != "all") &
+           ((SubjectGroup == "Computing") |
+            ((SubjectGroup == "ModernLanguages") & (CommonSubjectLabel %in% c("French", "German", "Spanish", "Italian")))
+            )
+          ) %>%
+
+    group_by(Gender, Subject) %>%
+    mutate(across(matches("TeacherFTE"), list(median = ~ (median(., na.rm = TRUE)),
+                                              mean = ~ (mean(., na.rm = TRUE))),
+                  .names = "{.col}_{.fn}_by_gender")
+          ) %>%
+    ungroup() %>%
+    mutate(across(Subject, ~ fct_drop(.)))
+
+
+## ---- summary_cs_languages_teacher_fte_main_subject_by_gender_total --------
+
+summary_cs_languages_teacher_fte_main_subject_by_gender %>%
+
+    ggplot(aes(Year, TeacherFTE, colour = Subject, group = Subject, shape = Subject, linetype = Subject)) +
+        geom_point(size = 2.15) +
+        geom_line() +
+        #ggtitle(paste("\n\nTotal FTE by Gender,", focus_subject_group, "cf. Computing")) +
+        ylab("Teacher FTE") +
+        xlab("") +
+        dressCodeTheme +
+        scale_colour_brewer("subject", palette = "Dark2") + #, direction = -1) +
+        #scale_linetype_manual(values = c("twodash",  "dotted")) +
+        scale_shape_manual(values = seq(6, 14)) +
+        scale_y_continuous(limits = c(0, max(summary_cs_languages_teacher_fte_main_subject_by_gender$TeacherFTE, na.rm = TRUE))) +
+        guides(linetype = "none",
+               colour = guide_legend("title"), shape = guide_legend("title") # megre
+              ) +
+
+        theme(#legend.position = "bottom",
+              legend.title = element_blank(),
+              legend.margin = margin(0),
+              axis.text.y = element_text(size = 14),
+              ) +
+        facet_grid(cols = vars(Gender))
+
+
+## ---- summary_cs_languages_teacher_fte_main_subject_by_gender_as_main --------
+
+summary_cs_languages_teacher_fte_main_subject_by_gender %>%
+
+    ggplot(aes(Year, TeacherFTE_Main, colour = Subject, group = Subject, shape = Subject,
+               linetype = Subject)) +
+        geom_point(size = 2.15) +
+        geom_line() +
+        #ggtitle(paste("\n\nTotal FTE by Gender, Main Subject - ", focus_subject_group, "cf. Computing")) +
+        ylab("Teacher FTE- Main Subject") +
+        xlab("") +
+        dressCodeTheme +
+        scale_colour_brewer("subject", palette = "Dark2") + #, direction = -1) +
+        scale_shape_manual(values = seq(6, 14)) +
+        scale_y_continuous(limits = c(0, max(summary_cs_languages_teacher_fte_main_subject_by_gender$TeacherFTE, na.rm = TRUE))) +
+        guides(linetype = "none",
+               colour = guide_legend("title"), shape = guide_legend("title") # megre
+              ) +
+
+        theme(#legend.position = "bottom",
+              legend.title = element_blank(),
+              legend.margin = margin(0),
+              axis.text.y = element_text(size = 14),
+              ) +
+        facet_grid(cols = vars(Gender))
+
+
+## ---- summary_cs_languages_teacher_fte_main_subject_by_gender_as_other --------
+
+summary_cs_languages_teacher_fte_main_subject_by_gender %>%
+
+    ggplot(aes(Year, TeacherFTE_Other, colour = Subject, group = Subject, shape = Subject,
+               linetype = Subject)) +
+        geom_point(size = 2.15) +
+        geom_line() +
+        #ggtitle(paste("\n\nTotal FTE by Gender, Other Subject - ", focus_subject_group, "cf. Computing")) +
+        ylab("Teacher FTE - Other Subject") +
+        xlab("") +
+        dressCodeTheme +
+        scale_colour_brewer("subject", palette = "Dark2") + #, direction = -1) +
+        scale_shape_manual(values = seq(6, 14)) +
+        scale_y_continuous(limits = c(0, max(summary_cs_languages_teacher_fte_main_subject_by_gender$TeacherFTE, na.rm = TRUE))) +
+        guides(linetype = "none",
+               colour = guide_legend("title"), shape = guide_legend("title") # megre
+              ) +
+
+        theme(#legend.position = "bottom",
+              legend.title = element_blank(),
+              legend.margin = margin(0),
+              axis.text.y = element_text(size = 14),
+              ) +
+        facet_grid(cols = vars(Gender))
+
+
+
+## ---- summary_cs_business_teacher_fte_main_subject_by_gender --------
+
+focus_subject_group <- "Business"
+
+summary_cs_business_teacher_fte_main_subject_by_gender <- teacher_fte_main_subject_by_gender %>%
+    filter((Gender != "all") &
+           ((SubjectGroup == "Computing") |
+            str_detect(Subject, regex(focus_subject_group, ignore_case = TRUE))
+           )
+          ) %>%
+
+    group_by(Gender, Subject) %>%
+    mutate(across(matches("TeacherFTE"), list(median = ~ (median(., na.rm = TRUE)),
+                                              mean = ~ (mean(., na.rm = TRUE))),
+                  .names = "{.col}_{.fn}_by_gender")
+          ) %>%
+    ungroup() %>%
+    mutate(across(SubjectGroup, ~ fct_recode(., "Business" = "ModernStudies")),
+           across(Subject, ~ fct_drop(.)))
+
+
+## ---- summary_cs_business_teacher_fte_main_subject_by_gender_total --------
+
+summary_cs_business_teacher_fte_main_subject_by_gender %>%
+
+    ggplot(aes(Year, TeacherFTE, colour = Subject, group = Subject, shape = Subject, linetype = Subject)) +
+        geom_point(size = 2.15) +
+        geom_line() +
+        #ggtitle(paste("\n\nTotal FTE by Gender,", focus_subject_group, "cf. Computing")) +
+        ylab("Teacher FTE") +
+        xlab("") +
+        dressCodeTheme +
+        scale_colour_brewer("subject", palette = "Dark2") + #, direction = -1) +
+        scale_shape_manual(values = seq(6, 14)) +
+        scale_y_continuous(limits = c(0, max(summary_cs_business_teacher_fte_main_subject_by_gender$TeacherFTE, na.rm = TRUE))) +
+        guides(linetype = "none",
+               colour = guide_legend("title"), shape = guide_legend("title") # megre
+              ) +
+
+        theme(#legend.position = "bottom",
+              legend.title = element_blank(),
+              legend.margin = margin(0),
+              axis.text.y = element_text(size = 14),
+              ) +
+        facet_grid(cols = vars(Gender))
+
+
+## ---- summary_cs_business_teacher_fte_main_subject_by_gender_as_main --------
+
+summary_cs_business_teacher_fte_main_subject_by_gender %>%
+
+    ggplot(aes(Year, TeacherFTE_Main, colour = Subject, group = Subject, shape = Subject,
+               linetype = Subject)) +
+        geom_point(size = 2.15) +
+        geom_line() +
+        #ggtitle(paste("\n\nTotal FTE by Gender, Main Subject - ", focus_subject_group, "cf. Computing")) +
+        ylab("Teacher FTE- Main Subject") +
+        xlab("") +
+        dressCodeTheme +
+        scale_colour_brewer("subject", palette = "Dark2") + #, direction = -1) +
+        scale_shape_manual(values = seq(6, 14)) +
+        scale_y_continuous(limits = c(0, max(summary_cs_business_teacher_fte_main_subject_by_gender$TeacherFTE, na.rm = TRUE))) +
+        guides(linetype = "none",
+               colour = guide_legend("title"), shape = guide_legend("title") # megre
+              ) +
+
+        theme(#legend.position = "bottom",
+              legend.title = element_blank(),
+              legend.margin = margin(0),
+              axis.text.y = element_text(size = 14),
+              ) +
+        facet_grid(cols = vars(Gender))
+
+
+## ---- summary_cs_business_teacher_fte_main_subject_by_gender_as_other --------
+
+summary_cs_business_teacher_fte_main_subject_by_gender %>%
+
+    ggplot(aes(Year, TeacherFTE_Other, colour = Subject, group = Subject, shape = Subject,
+               linetype = Subject)) +
+        geom_point(size = 2.15) +
+        geom_line() +
+        #ggtitle(paste("\n\nTotal FTE by Gender, Other Subject - ", focus_subject_group, "cf. Computing")) +
+        ylab("Teacher FTE - Other Subject") +
+        xlab("") +
+        dressCodeTheme +
+        scale_colour_brewer("subject", palette = "Dark2") + #, direction = -1) +
+        scale_shape_manual(values = seq(6, 14)) +
+        scale_y_continuous(limits = c(0, max(summary_cs_business_teacher_fte_main_subject_by_gender$TeacherFTE, na.rm = TRUE))) +
+        guides(linetype = "none",
+               colour = guide_legend("title"), shape = guide_legend("title") # megre
+              ) +
+
+        theme(#legend.position = "bottom",
+              legend.title = element_blank(),
+              legend.margin = margin(0),
+              axis.text.y = element_text(size = 14),
+              ) +
+        facet_grid(cols = vars(Gender))
+
+
+## ---- gender_distribution_focus_subjects_teacher_fte --------
+
+facet_labeller <- function(facet_value) {
+    paste0(case_when((facet_value == "TeacherFTE") ~ "Total FTE",
+                     TRUE ~ str_remove(facet_value, "TeacherFTE") %>%
+                                 snakecase::to_title_case()
+                    )
+           )
+}
+
+gender_distribution_focus_subjects_teacher_fte <- teacher_fte_main_subject_by_gender %>%
+    select(!matches("Normalised$")) %>%
+    filter(((SubjectGroup %in% c("Computing", "Sciences")) &
+                !str_detect(Subject, regex("general", ignore_case = TRUE))
+            ) |
+            if_any(c(Subject, CommonSubjectLabel), ~
+                   str_detect(., regex(paste0(c("Business", "French", "German", "Spanish", "Italian"), collapse = "|"),
+                                       ignore_case = TRUE)))
+          ) %>%
+     mutate(across(SubjectGroup, ~ fct_recode(., "Business" = "ModernStudies"))) %>%
+
+    group_by(Year, Gender, CommonSubjectLabel) %>%
+    mutate(across(matches("^TeacherFTE"), ~ sum(., na.rm = TRUE), .names = "total_year_by_gender_{.col}")) %>%
+
+    group_by(Year, CommonSubjectLabel) %>%
+    mutate(across(matches("^TeacherFTE"), ~ sum(., na.rm = TRUE), .names = "total_year_{.col}")) %>%
+
+    ungroup() %>%
+    distinct() %>%
+    mutate(across(matches("total_year_by_gender_"), ~ (. / get(str_remove(cur_column(), "by_gender_"))),
+                  .names = "PercentageFTE_{.col}"),
+           ) %>%
+    rename_with(~ str_remove(., "total_year_by_gender_"), matches("PercentageFTE_")) %>%
+
+    pivot_longer(where(is.double), names_to = "Metric", values_to = "TeacherFTE", values_drop_na = TRUE) %>%
+
+    filter(str_detect(Metric, "PercentageFTE")) %>%
+    rename(PercentageFTE = TeacherFTE) %>%
+
+    mutate(across(Metric, ~ gsub("PercentageFTE_", "", .)),
+           across(Metric, ~ gsub("(Main|Other)", "As\\1Subject", .)),
+           across(CommonSubjectLabel, ~ if_else(!is.na(.), ., SubjectGroup)),
+           across(CommonSubjectLabel, ~ fct_reorder(., as.integer(SubjectGroup))),
+           across(matches("Subject"), ~ fct_drop(.)),
+           tooltip = paste0(CommonSubjectLabel, ", ", Gender, " - ", round(PercentageFTE, 2) * 100, "% in ", Year)
+          )
+
+## ---- gender_distribution_computing_cf_sciences_teacher_fte --------
+
+plots_cf_sciences <- list()
+current_filter <- gender_distribution_focus_subjects_teacher_fte %>%
+    filter(SubjectGroup %in% c("Computing", "Sciences")) %>%
+    distinct(CommonSubjectLabel) %>%
+    deframe() %>%
+    as.character()
+
+for (i in seq(current_filter)) {
+  
+    plots_cf_sciences[[i]] <- gender_distribution_focus_subjects_teacher_fte %>%
+        filter(CommonSubjectLabel == current_filter[i]) %>%
+        ggplot(aes(y = Year, x = if_else(Gender == "male", PercentageFTE, - PercentageFTE),
+                   fill = Gender, colour = Gender, text = tooltip)) +
+            geom_segment(aes(xend = 0, yend = Year), linewidth = 1.5) + #alpha = 0.35) +
+            geom_point(aes(colour = Gender), size = 0.75) + #, alpha = 0.65) +
+            ggtitle(current_filter[i]) + #paste("Gender Distribution -", current_filter[i])) +
+            xlab(NULL) + ylab(NULL) +
+            scale_x_continuous(labels = function(x) scales::percent(abs(x)), breaks = seq(-1, 1, 0.2)) +
+            #scale_shape_manual(values = c(6, 2)) + #-0x2640L, -0x2642L)) + # \u2640 and \u2642
+            scale_colour_manual(values = gender_colour_scheme) +
+            scale_fill_manual(values = gender_colour_scheme) +
+            dressCodeTheme +
+            theme(axis.text.x = element_text(size = 9, angle = 0, vjust = 0),
+                  axis.text.y = element_text(size = 7),
+                  panel.grid.major.y = element_blank(),
+                  panel.grid.major.x = element_line(),
+                  strip.text = element_text(size = 11),
+                  legend.title = element_blank(),
+                  legend.position = "bottom"
+                 ) +
+            facet_wrap(~ Metric, ncol = 1, strip.position = "right", labeller = as_labeller(facet_labeller))
+            
+       
+        plots_cf_sciences[[i]] <- convertToPlotly(plots_cf_sciences[[i]],
+                    renameTraces = TRUE, regexpr = genderRegex, height = 650, width = 900, maxMargin = 1,
+                    yaxis = list(tickfont = list(size = 9))
+                   ) %>%
+                   layout(xaxis = list(title = list(font = list(size = 14)), showline = TRUE,
+                            linecolor = "rgb(175, 175, 175)", zeroline = TRUE),
+                       #yaxis = list(dtick = "2", tick0 = min(computing_uptake$year), tickmode = "linear"), #, yaxis.minor.dtick = 1), #tickfont = list(font = list(size = 4))),
+                       legend = list(orientation = 'h', yanchor = "bottom", title = list(text = "")), #y = -0.28,
+                       margin = list(l = 5)) %>%
+                    config(displayModeBar = FALSE)
+}
+
+
 ## ----  --------
 
 
@@ -2095,7 +2391,117 @@ teacher_fte_main_subject_by_gender %>%
 
 
 
+## ---- teachers_initial_intake_pgde_secondary_and_alt_routes_overview --------
+
+teachers_initial_intake_pgde_secondary_and_alt_routes %>%
+    
+    group_by(year) %>%
+    summarise(across(c(SFCTarget, Intake), ~ sum(., na.rm = TRUE))) %>%
+    pivot_longer(!year, names_to = "category", values_to = "count") %>%
+    mutate(across(year, ~ gsub("_", "-", .))) %>%
+
+    ggplot(aes(y = year, x = count)) +
+        geom_col(aes(fill = category), width = 0.65, alpha = 0.65, position = "dodge", na.rm = TRUE) +
+        scale_fill_brewer("statistics", palette = "Dark2", direction = -1) +
+        dressCodeTheme +
+        ggtitle("Initial teacher education: PGDE and Other Routes") +
+        ylab("") +
+        xlab("No. of Student Teachers") +
+        scale_x_continuous(labels = scales::comma) +  #label_number_si()) + 
+        dressCodeTheme  +
+        theme(axis.text.y = element_markdown(),
+              axis.text.x = element_text(size = 9, angle = 0, vjust = 0),
+			  #axis.text.y = element_text(size = 7),
+			  strip.text = element_text(size = 11),
+			  legend.title = element_blank()
+			  )
+
+
+## ---- teachers_initial_intake_university_overview --------
+
+teachers_initial_intake_university %>%
+    group_by(year) %>%
+    rename(SFCTarget = Target) %>%
+    summarise(across(c(SFCTarget, Intake), ~ sum(., na.rm = TRUE))) %>%
+    pivot_longer(!year, names_to = "category", values_to = "count") %>%
+    mutate(across(year, ~ gsub("_", "-", .))) %>%
+
+    ggplot(aes(y = year, x = count)) +
+        geom_col(aes(fill = category), width = 0.65, alpha = 0.65, position = "dodge", na.rm = TRUE) +
+        scale_fill_brewer("statistics", palette = "Dark2", direction = -1) +
+        dressCodeTheme +
+        ggtitle("Initial teacher education: University") +
+        ylab("") +
+        xlab("No. of Student Teachers") +
+        scale_x_continuous(labels = scales::comma) +  #label_number_si()) + 
+        dressCodeTheme  +
+        theme(axis.text.y = element_markdown(),
+              axis.text.x = element_text(size = 9, angle = 0, vjust = 0),
+			  #axis.text.y = element_text(size = 7),
+			  strip.text = element_text(size = 11),
+			  legend.title = element_blank()
+              )  
+
+## ---- teachers_initial_intake_pgde_secondary_and_alt_routes_by_subject --------
+
+teachers_initial_intake_pgde_secondary_and_alt_routes %>%
+    
+    pivot_longer(!c(Subject, year), names_to = "category", values_to = "count") %>%
+    mutate(across(year, ~ gsub("_", "-", .)),
+           across(Subject, ~ fct_reorder(Subject, count, .na_rm = TRUE)),
+           across(Subject, ~ fct_relevel(., "Alternative routes")),
+          ) %>%
+
+    ggplot(aes(y = Subject, x = count)) +
+        geom_segment(aes(xend = 0, yend = Subject)) +
+        geom_point(aes(colour = category), size = 3, alpha = 0.65) +
+        scale_colour_brewer("statistics", palette = "Dark2", direction = -1) +
+        dressCodeTheme +
+        ggtitle("Initial teacher education intake by Subject: PGDE and Other Routes") +
+        ylab("") +
+        xlab("No. of Student Teachers") +
+        scale_x_continuous(labels = scales::comma) +  #label_number_si()) + 
+        dressCodeTheme  +
+        theme(axis.text.y = element_markdown(),
+              axis.text.x = element_text(size = 11), 
+              legend.title = element_blank(),
+              ) +
+        facet_grid(cols = vars(year))							   
+
+
+## ---- teachers_initial_intake_university_by_award --------
+
+teachers_initial_intake_university %>%
+    rename(SFCTarget = Target) %>%
+    pivot_longer(!c(ITECategory, year, award_type, school_stage), names_to = "category", values_to = "count") %>%
+
+    mutate(across(school_stage, ~ fct_na_level_to_value(.)),
+		   across(award_type, ~ fct_relevel(., "New routes", "Alternative routes", after = Inf)),
+          ) %>%
+
+    arrange(award_type, school_stage, desc(count)) %>%
+    mutate(across(year, ~ gsub("_", "-", .)),
+           across(ITECategory, ~ fct_inorder(.))
+           ) %>%
+    
+    ggplot(aes(y = fct_rev(ITECategory), x = count)) +
+        geom_segment(aes(xend = 0, yend = ITECategory)) +
+        geom_point(aes(colour = category), size = 3, alpha = 0.65) +
+        scale_colour_brewer("statistics", palette = "Dark2", direction = -1) +
+        dressCodeTheme +
+        ggtitle("Initial teacher education intake by award: University") +
+        ylab("") +
+        xlab("No. of Student Teachers") +
+        scale_x_continuous(labels = scales::comma) +  #label_number_si()) + 
+        dressCodeTheme  +
+        theme(axis.text.y = element_markdown(),
+              axis.text.x = element_text(size = 11, angle = 45, vjust = 0.5), 
+              legend.title = element_blank(),
+              ) +
+        facet_grid(cols = vars(year))
+							   
 ## ----  --------
 
+							   
 
 
