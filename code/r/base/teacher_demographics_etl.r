@@ -8,7 +8,7 @@ teacher_census <- dbGetQuery(dbConn, paste("SELECT DISTINCT teacher_census.Year,
                           "ON (teacher_census.Subject = subject_groups.Subject) AND",
                                   "(teacher_census.Year = subject_groups.year)"
                          )) %>%
-    mutate(across(LocalAuthority, ~ fct_relevel(., "Grant Aided", "All local authorities", after = Inf)),
+    mutate(across(LocalAuthority, ~ fct_relevel(., "Grant Aided", "All local authorities", "Scotland", after = Inf)),
            across(c(Subject, SubjectGroup), ~ fct_inorder(.)),
            across(c(Subject, SubjectGroup), ~ fct_relevel(., sort(levels(.)[str_detect(levels(.),
                                                                                        regex("computing", ignore_case = TRUE))]))),
@@ -21,7 +21,7 @@ teacher_census <- dbGetQuery(dbConn, paste("SELECT DISTINCT teacher_census.Year,
 teacher_fte_local_authority_by_age <-  dbGetQuery(dbConn, "SELECT * FROM teacher_fte_local_authority_by_age") %>%
     mutate(across(Year, as.ordered),
            across(AgeRange, ~ fct_relevel(., ">= 55", after = Inf)),
-           across(LocalAuthority, ~ fct_relevel(., "Grant Aided", "All local authorities", after = Inf))
+           across(LocalAuthority, ~ fct_relevel(., "Grant Aided", "All local authorities", "Scotland", after = Inf))
           )
 
 
@@ -39,7 +39,7 @@ teacher_fte_main_subject_by_age <- dbGetQuery(dbConn, paste("SELECT DISTINCT Yea
           ) 
 
 teacher_fte_local_authority_by_gender <- dbGetQuery(dbConn, "SELECT * FROM teacher_fte_local_authority_by_gender ") %>%
-    mutate(across(LocalAuthority, ~ fct_relevel(., "Grant Aided", "All local authorities", after = Inf)),
+    mutate(across(LocalAuthority, ~ fct_relevel(., "Grant Aided", "All local authorities", "Scotland", after = Inf)),
            across(Gender, ~ fct_relevel(., "all", after = Inf)),
            across(Year, ~ as.ordered(as.integer(.))),
           )
@@ -86,5 +86,8 @@ distribution_teacher_age <- dbGetQuery(dbConn, "SELECT * FROM distribution_teach
 
     mutate(across(c(Age, Year), as.ordered)
           )
-          
+
+teacher_fte_main_subject_by_age_start_year <- min(levels(teacher_fte_main_subject_by_age$Year), na.rm = TRUE)
+teacher_fte_main_subject_by_age_end_year <- max(levels(teacher_fte_main_subject_by_age$Year), na.rm = TRUE)
+
 dbDisconnect(dbConn)

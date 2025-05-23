@@ -1118,7 +1118,7 @@ distribution_teacher_age  %>%
                                 labels = c("Average", "Median")) +
         scale_colour_manual("Teacher Age",
                                 values = c("Average" = as.character(color("high contrast")(3)[3]), #["red"]),
-                                           "Median" = as.character(color("high contrast")(3)[3]) #["blue"])
+                                           "Median" = as.character(color("high contrast")(3)[1]) #["blue"])
                                            ),
                                 labels = c("Average", "Median")) +
 
@@ -1135,7 +1135,7 @@ distribution_teacher_age  %>%
 
 teacher_fte_local_authority_by_age %>%
 
-    filter((AgeRange != "Average") & (LocalAuthority != "All local authorities")) %>%
+    filter((AgeRange != "Average") & !(LocalAuthority %in% c("All local authorities", "Scotland"))) %>%
     group_by(AgeRange, Year) %>%
     summarise(across(TeacherFTE, list(median = ~ median(., na.rm = TRUE),
                                       average = ~ mean(., na.rm = TRUE))
@@ -1184,7 +1184,7 @@ teacher_fte_local_authority_by_age %>%
 ## ---- teacher_demographics_age_median_fte_all_local_authorities --------
 
 teacher_fte_local_authority_by_age %>%
-    filter((AgeRange != "Average") & (LocalAuthority != "All local authorities")) %>%
+    filter((AgeRange != "Average") & !(LocalAuthority %in% c("All local authorities", "Scotland"))) %>%
     group_by(Year, AgeRange) %>%
     summarise(across(TeacherFTE, list(median = ~ median(., na.rm = TRUE),
                                       average = ~ mean(., na.rm = TRUE))
@@ -1475,8 +1475,8 @@ teacher_fte_main_subject_by_age %>%
         geom_point(size = 0.95) +
         geom_line() + 
         ggtitle(paste("Teacher FTE Change",
-                      paste0(min(levels(teacher_fte_main_subject_by_age$Year), na.rm = TRUE), "-",
-                             max(levels(teacher_fte_main_subject_by_age$Year), na.rm = TRUE)
+                      paste0(teacher_fte_main_subject_by_age_start_date, "-",
+                             teacher_fte_main_subject_by_age_end_date
                             ),
                       "- Computing cf. Sciences")) +
         ylab("Median FTE") + xlab("") + 
@@ -1521,8 +1521,8 @@ teacher_fte_main_subject_by_age %>%
         geom_point(size = 0.95) +
         geom_line() + 
         ggtitle(paste("Teacher FTE Change",
-                      paste0(min(levels(teacher_fte_main_subject_by_age$Year), na.rm = TRUE), "-",
-                             max(levels(teacher_fte_main_subject_by_age$Year), na.rm = TRUE)
+                      paste0(teacher_fte_main_subject_by_age_start_date, "-",
+                             teacher_fte_main_subject_by_age_end_date
                             ),
                       "- Computing cf. Modern Languages")) +
         ylab("Median FTE") + xlab("") + 
@@ -1562,8 +1562,8 @@ teacher_fte_main_subject_by_age %>%
         geom_point(size = 0.95) +
         geom_line() + 
         ggtitle(paste("Teacher FTE Change",
-                      paste0(min(levels(teacher_fte_main_subject_by_age$Year), na.rm = TRUE), "-",
-                             max(levels(teacher_fte_main_subject_by_age$Year), na.rm = TRUE)
+                      paste0(teacher_fte_main_subject_by_age_start_date, "-",
+                             teacher_fte_main_subject_by_age_end_date
                             ),
                       "- Computing cf. Sciences")) +
         ylab("Median FTE") + xlab("") + 
@@ -1610,8 +1610,8 @@ teacher_fte_main_subject_by_age %>%
         geom_point(size = 0.95) +
         geom_line() + 
         ggtitle(paste("Teacher FTE Change",
-                      paste0(min(levels(teacher_fte_main_subject_by_age$Year), na.rm = TRUE), "-",
-                             max(levels(teacher_fte_main_subject_by_age$Year), na.rm = TRUE)
+                      paste0(teacher_fte_main_subject_by_age_start_date, "-",
+                             teacher_fte_main_subject_by_age_end_date
                             ),
                       "- Computing cf. Modern Languages")) +
         ylab("Median FTE") + xlab("") + 
