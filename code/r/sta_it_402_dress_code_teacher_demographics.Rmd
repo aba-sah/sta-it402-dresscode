@@ -488,13 +488,13 @@ FTE &ndash; Age Distribution {data-navmenu="Subject Comparison"}
 Row {.tabset .tabset-fade}
 -----------------------------------------------------------------------
 
-### Teacher FTE Change 2011-2021 &ndash; Computing compared to Sciences
+### Teacher FTE Change `r teacher_fte_main_subject_by_age_start_year `-`r teacher_fte_main_subject_by_age_end_year ` &ndash; Computing compared to Sciences
 
 ```{r, teacher_demographics_age_over_time_computing_vs_sciences, fig.height = 7, fig.width = 14}
 ```
 
 
-### Teacher FTE Change 2011-2021 &ndash; Computing compared to Modern Languages
+### Teacher FTE Change `r teacher_fte_main_subject_by_age_start_year `-`r teacher_fte_main_subject_by_age_end_year ` &ndash; Computing compared to Modern Languages
 
 ```{r, teacher_demographics_age_over_time_computing_vs_modern_languages, fig.height = 7, fig.width = 14}
 ```
@@ -507,13 +507,13 @@ FTE &ndash; Age Distribution over Time {data-navmenu="Subject Comparison"}
 Row {.tabset .tabset-fade}
 -----------------------------------------------------------------------
 
-### Teacher FTE Change 2011-2021, by Age Range &ndash; Computing compared to Sciences
+### Teacher FTE Change `r teacher_fte_main_subject_by_age_start_year `-`r teacher_fte_main_subject_by_age_end_year `, by Age Range &ndash; Computing compared to Sciences
 
 ```{r, teacher_demographics_age_change_over_time_computing_vs_sciences, fig.height = 7, fig.width = 14}
 ```
 
 
-### Teacher FTE Change 2011-2021, by Age Range &ndash; Computing compared to Modern Languages
+### Teacher FTE Change `r teacher_fte_main_subject_by_age_start_year `-`r teacher_fte_main_subject_by_age_end_year `, by Age Range &ndash; Computing compared to Modern Languages
 
 ```{r, teacher_demographics_age_change_over_time_computing_vs_modern_languages, fig.height = 7, fig.width = 14}
 ```
